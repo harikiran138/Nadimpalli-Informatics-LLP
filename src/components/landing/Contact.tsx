@@ -24,14 +24,20 @@ export function Contact() {
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
-                                    transition={{ delay: 0.1 }}
+                                    transition={{ duration: 1.2, ease: "easeOut" }}
                                     className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gray-800 via-gray-500 to-black"
                                 >
                                     Initialize <br /> Connection
                                 </motion.h2>
-                                <p className="text-black text-lg font-medium leading-relaxed mb-8">
+                                <motion.p
+                                    initial={{ opacity: 0 }}
+                                    whileInView={{ opacity: 1 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: 0.4, duration: 1.2, ease: "easeOut" }}
+                                    className="text-black text-lg font-medium leading-relaxed mb-8"
+                                >
                                     Ready to deploy intelligent solutions? Establish a direct line to our engineering team.
-                                </p>
+                                </motion.p>
                             </div>
 
                             <div className="space-y-6">

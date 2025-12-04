@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -35,61 +34,91 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50">
-            {/* Background Effects */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-100 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-100 rounded-full blur-[120px]" />
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[#E0E5EC]">
+            {/* 3D Floating Shapes */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                {/* Large Ring */}
+                <motion.div
+                    animate={{ rotate: 360, y: [0, -20, 0] }}
+                    transition={{ rotate: { duration: 20, repeat: Infinity, ease: "linear" }, y: { duration: 5, repeat: Infinity, ease: "easeInOut" } }}
+                    className="absolute top-[-10%] right-[-5%] w-96 h-96 rounded-full border-[40px] border-slate-200/60 shadow-[20px_20px_60px_#bebebe,-20px_-20px_60px_#ffffff] z-0 opacity-60"
+                />
+
+                {/* Small Sphere Top Left */}
+                <motion.div
+                    animate={{ y: [0, 30, 0] }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute top-[10%] left-[10%] w-24 h-24 rounded-full bg-gradient-to-br from-slate-100 to-slate-300 shadow-[10px_10px_30px_#bebebe,-10px_-10px_30px_#ffffff] z-0"
+                />
+
+                {/* Sphere Bottom Right */}
+                <motion.div
+                    animate={{ y: [0, -40, 0] }}
+                    transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute bottom-[10%] right-[20%] w-40 h-40 rounded-full bg-gradient-to-br from-slate-100 to-slate-300 shadow-[15px_15px_45px_#bebebe,-15px_-15px_45px_#ffffff] z-0"
+                />
+
+                {/* Donut/Torus Shape Bottom Left */}
+                <motion.div
+                    animate={{ rotate: -360, x: [0, 20, 0] }}
+                    transition={{ rotate: { duration: 25, repeat: Infinity, ease: "linear" }, x: { duration: 8, repeat: Infinity, ease: "easeInOut" } }}
+                    className="absolute bottom-[-5%] left-[-5%] w-80 h-80 rounded-full border-[30px] border-slate-200/50 shadow-[20px_20px_60px_#bebebe,-20px_-20px_60px_#ffffff] z-0 opacity-50"
+                />
             </div>
 
             <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
                 className="relative z-10 w-full max-w-md p-8"
             >
-                <Link href="/" className="inline-flex items-center text-slate-500 hover:text-blue-600 mb-8 transition-colors">
-                    <ArrowLeft className="w-4 h-4 mr-2" /> Back to Home
+                <Link href="/" className="inline-flex items-center text-slate-500 hover:text-slate-800 mb-8 transition-colors absolute top-0 left-8">
+                    <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Link>
 
-                <div className="rounded-[2rem] bg-white border border-slate-200 shadow-xl p-8 overflow-hidden">
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome Back</h1>
-                        <p className="text-slate-500">Sign in to access your dashboard</p>
+                {/* Glass Card */}
+                <div className="mt-12 rounded-[2rem] bg-white/30 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] p-10 overflow-hidden relative">
+                    {/* Inner shine/reflection */}
+                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/40 to-transparent pointer-events-none" />
+
+                    <div className="text-center mb-8 relative z-10">
+                        <h1 className="text-3xl font-bold text-black mb-2 tracking-tight">Welcome Back</h1>
+                        <p className="text-slate-700 font-medium">Sign in to your account</p>
                     </div>
 
-                    <form onSubmit={handleLogin} className="space-y-6">
+                    <form onSubmit={handleLogin} className="space-y-6 relative z-10">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700 ml-1">Employee ID</label>
-                            <div className="relative">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <label className="text-sm font-bold text-black ml-1">Employee ID</label>
+                            <div className="relative group">
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-black transition-colors" />
                                 <Input
                                     type="text"
                                     placeholder="EMP12345"
                                     value={employeeId}
                                     onChange={(e) => setEmployeeId(e.target.value)}
                                     required
-                                    className="h-12 pl-12 rounded-xl bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 text-slate-900 placeholder:text-slate-400"
+                                    className="h-12 pl-12 rounded-xl bg-white/50 border-white/50 focus:bg-white/80 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium"
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700 ml-1">Password</label>
-                            <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <label className="text-sm font-bold text-black ml-1">Password</label>
+                            <div className="relative group">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-black transition-colors" />
                                 <Input
                                     type="password"
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
-                                    className="h-12 pl-12 rounded-xl bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 text-slate-900 placeholder:text-slate-400"
+                                    className="h-12 pl-12 rounded-xl bg-white/50 border-white/50 focus:bg-white/80 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium"
                                 />
                             </div>
                         </div>
 
                         {error && (
-                            <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm text-center">
+                            <div className="p-3 rounded-lg bg-red-50/80 border border-red-100 text-red-600 text-sm text-center backdrop-blur-sm font-medium">
                                 {error}
                             </div>
                         )}
@@ -97,7 +126,7 @@ export default function LoginPage() {
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="w-full h-12 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-lg font-medium shadow-lg shadow-blue-600/20 transition-all"
+                            className="w-full h-12 rounded-xl bg-black hover:bg-slate-900 text-white text-lg font-bold shadow-lg shadow-black/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                         >
                             {loading ? (
                                 <>
@@ -109,10 +138,10 @@ export default function LoginPage() {
                         </Button>
                     </form>
 
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-slate-500">
+                    <div className="mt-8 text-center relative z-10">
+                        <p className="text-sm text-slate-700 font-medium">
                             Don't have an account?{" "}
-                            <Link href="/signup" className="text-blue-600 hover:text-blue-700 font-medium hover:underline">
+                            <Link href="/signup" className="text-black hover:text-slate-800 font-bold hover:underline">
                                 Sign up
                             </Link>
                         </p>

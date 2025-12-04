@@ -8,7 +8,6 @@ export function Footer() {
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
                     <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
                             <span className="text-xl font-bold bg-gradient-to-r from-gray-800 via-gray-500 to-black bg-clip-text text-transparent">
                                 Nadimpalli Informatics
                             </span>

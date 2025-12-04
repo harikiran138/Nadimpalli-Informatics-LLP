@@ -51,13 +51,20 @@ export function About() {
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
+                            transition={{ duration: 1.2, ease: "easeOut" }}
                             className="text-5xl md:text-7xl font-bold mb-8 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gray-800 via-gray-500 to-black"
                         >
                             About Us
                         </motion.h2>
-                        <p className="text-black max-w-3xl mx-auto text-xl md:text-2xl font-medium leading-relaxed">
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.4, duration: 1.2, ease: "easeOut" }}
+                            className="text-black max-w-3xl mx-auto text-xl md:text-2xl font-medium leading-relaxed"
+                        >
                             Built on a foundation of cutting-edge principles designed for the future of education.
-                        </p>
+                        </motion.p>
                     </div>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
