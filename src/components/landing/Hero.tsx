@@ -63,7 +63,7 @@ export function Hero() {
                         </span>
                     </h1>
 
-                    <p className="text-xl text-slate-300 max-w-lg mb-8 leading-relaxed">
+                    <p className="text-xl text-slate-600 max-w-lg mb-8 leading-relaxed">
                         Seamless technology for the smartest campuses. Precision-built modules for the modern educational ecosystem.
                     </p>
 
