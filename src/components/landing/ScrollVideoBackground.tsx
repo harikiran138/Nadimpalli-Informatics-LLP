@@ -4,7 +4,7 @@ import { useRef, useEffect } from "react";
 
 export function ScrollVideoBackground() {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const requestRef = useRef<number>();
+    const requestRef = useRef<number | undefined>(undefined);
     const targetTimeRef = useRef(0);
 
     useEffect(() => {
