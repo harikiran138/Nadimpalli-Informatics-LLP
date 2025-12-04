@@ -11,10 +11,18 @@ export function Hero() {
 
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-            {/* Background Elements */}
+            {/* Background Video */}
             <div className="absolute inset-0 z-0">
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[128px] mix-blend-screen animate-pulse" />
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-[128px] mix-blend-screen animate-pulse delay-1000" />
+                <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover opacity-40"
+                >
+                    <source src="/herobanner.mp4" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/50 to-background" />
             </div>
 
             <div className="container mx-auto px-4 z-10 grid lg:grid-cols-2 gap-12 items-center">
