@@ -47,13 +47,16 @@ export function Hero() {
                     </p>
 
                     <div className="flex flex-wrap gap-4 justify-start">
-                        <Button size="lg" className="h-14 px-8 rounded-full bg-black hover:bg-black/80 text-slate-200 text-lg shadow-[0_0_20px_rgba(0,0,0,0.3)] border border-slate-700">
-                            Get a Demo
-                            <ChevronRight className="ml-2 h-5 w-5" />
-                        </Button>
-                        <Button size="lg" variant="outline" className="h-14 px-8 rounded-full border-slate-600 hover:bg-slate-900/70 text-slate-300 text-lg backdrop-blur-md">
-                            Our Solutions
-                        </Button>
+                        <button className="group relative w-44 h-14 rounded-full flex justify-center items-center gap-3 bg-[#1C1A1C] cursor-pointer transition-all duration-450 hover:bg-gradient-to-t hover:from-[#8B5CF6] hover:to-[#EC4899] hover:shadow-[inset_0px_1px_0px_0px_rgba(255,255,255,0.4),inset_0px_-4px_0px_0px_rgba(0,0,0,0.2),0px_0px_0px_4px_rgba(255,255,255,0.2),0px_0px_180px_0px_#EC4899] hover:-translate-y-0.5">
+                            <span className="text-[#AAAAAA] font-semibold text-sm transition-colors duration-450 group-hover:text-white">Get a Demo</span>
+                            <ChevronRight className="w-5 h-5 text-[#AAAAAA] transition-all duration-800 group-hover:text-white group-hover:scale-120" />
+                        </button>
+                        <button className="group relative w-44 h-14 rounded-full flex justify-center items-center gap-3 bg-[#1C1A1C] cursor-pointer transition-all duration-450 hover:bg-gradient-to-t hover:from-[#8B5CF6] hover:to-[#EC4899] hover:shadow-[inset_0px_1px_0px_0px_rgba(255,255,255,0.4),inset_0px_-4px_0px_0px_rgba(0,0,0,0.2),0px_0px_0px_4px_rgba(255,255,255,0.2),0px_0px_180px_0px_#EC4899] hover:-translate-y-0.5">
+                            <svg height={20} width={20} fill="#FFFFFF" viewBox="0 0 24 24" data-name="Layer 1" id="Layer_1" className="fill-[#AAAAAA] transition-all duration-800 group-hover:fill-white group-hover:scale-120">
+                                <path d="M10,21.236,6.755,14.745.264,11.5,6.755,8.255,10,1.764l3.245,6.491L19.736,11.5l-6.491,3.245ZM18,21l1.5,3L21,21l3-1.5L21,18l-1.5-3L18,18l-3,1.5ZM19.333,4.667,20.5,7l1.167-2.333L24,3.5,21.667,2.333,20.5,0,19.333,2.333,17,3.5Z" />
+                            </svg>
+                            <span className="text-[#AAAAAA] font-semibold text-sm transition-colors duration-450 group-hover:text-white">Our Solutions</span>
+                        </button>
                     </div>
                 </motion.div>
             </div>

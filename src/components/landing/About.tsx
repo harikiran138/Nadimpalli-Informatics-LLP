@@ -51,11 +51,11 @@ export function About() {
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            className="text-5xl md:text-7xl font-bold mb-8 text-white tracking-tight"
+                            className="text-5xl md:text-7xl font-bold mb-8 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gray-800 via-gray-500 to-black"
                         >
-                            About <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">Us</span>
+                            About Us
                         </motion.h2>
-                        <p className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400 max-w-3xl mx-auto text-xl md:text-2xl font-medium leading-relaxed drop-shadow-[0_0_8px_rgba(217,70,239,0.5)]">
+                        <p className="text-black max-w-3xl mx-auto text-xl md:text-2xl font-medium leading-relaxed">
                             Built on a foundation of cutting-edge principles designed for the future of education.
                         </p>
                     </div>
@@ -72,17 +72,17 @@ export function About() {
                                 className="group relative h-80 p-8 rounded-[2rem] bg-white/10 border border-white/20 backdrop-blur-xl hover:bg-white/20 hover:border-white/30 transition-all duration-500 flex flex-col justify-between overflow-hidden shadow-lg"
                             >
                                 <div className="relative z-10">
-                                    <span className="text-6xl font-bold transition-opacity duration-500 bg-gradient-to-b from-white via-slate-300 to-slate-600 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                                    <span className="text-6xl font-bold transition-opacity duration-500 bg-gradient-to-b from-slate-300 via-slate-600 to-slate-900 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(255,255,255,0.2)]">
                                         {feature.id}
                                     </span>
                                 </div>
 
                                 <div className="relative z-10">
-                                    <h3 className="text-2xl font-semibold mb-4 bg-gradient-to-b from-white via-slate-200 to-slate-500 bg-clip-text text-transparent drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                                    <h3 className="text-2xl font-semibold mb-4 bg-gradient-to-b from-slate-200 via-slate-500 to-slate-800 bg-clip-text text-transparent drop-shadow-[0_1px_2px_rgba(255,255,255,0.1)]">
                                         {feature.title}
                                     </h3>
 
-                                    <p className="text-slate-300 font-medium leading-relaxed drop-shadow-md">
+                                    <p className="text-black font-medium leading-relaxed drop-shadow-sm">
                                         {feature.description}
                                     </p>
                                 </div>
