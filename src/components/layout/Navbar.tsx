@@ -23,7 +23,15 @@ export function Navbar() {
                 </div>
             </div>
 
-            <NavBar items={navItems} />
+            <NavBar items={navItems}>
+                {/* Additional items not part of the main navItems array, placed at the end of the navbar */}
+                <Link href="/login">
+                    <Button variant="ghost" className="text-muted-foreground hover:text-white hover:bg-white/10">
+                        Login
+                    </Button>
+                </Link>
+            </NavBar>
         </>
     );
 }
+```
