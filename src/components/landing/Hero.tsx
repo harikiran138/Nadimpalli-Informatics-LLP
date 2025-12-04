@@ -1,24 +1,26 @@
 "use client";
 
-import { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ChevronRight } from "lucide-react";
 
 export function Hero() {
-    const videoRef = useRef<HTMLVideoElement>(null);
-
-    useEffect(() => {
-        if (videoRef.current) {
-            videoRef.current.play().catch((error) => {
-                console.log("Video autoplay failed:", error);
-            });
-        }
-    }, []);
 
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-            {/* Background Video removed - now global */}
+            {/* Background Video */}
+            <div className="absolute inset-0 z-0">
+                <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover opacity-50"
+                >
+                    <source src="/hero-video.mp4" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/90" />
+            </div>
 
             <div className="container mx-auto px-4 z-10 flex flex-col items-start justify-center text-left">
                 {/* Text Content */}
