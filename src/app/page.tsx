@@ -11,29 +11,28 @@ export default function Home() {
     <div className="min-h-screen text-foreground selection:bg-primary/30 selection:text-white overflow-x-hidden">
       <Navbar />
 
-      <main className="relative z-10">
-        <Hero />
-        <div className="relative">
-          {/* Unified Background Video */}
-          <div className="absolute inset-0 z-0">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-full object-cover sticky top-0"
-            >
-              <source src="/about-bg-unicorn.webm" type="video/webm" />
-            </video>
+      <main className="relative min-h-screen">
+        {/* Global Fixed Background Video */}
+        <div className="fixed inset-0 z-0">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source src="/hero-video.mp4" type="video/mp4" />
+          </video>
 
-          </div>
+        </div>
 
-          <div className="relative z-10">
-            <About />
-            <Services />
-            <Contact />
-            <Footer />
-          </div>
+        {/* Content */}
+        <div className="relative z-10">
+          <Hero />
+          <About />
+          <Services />
+          <Contact />
+          <Footer />
         </div>
       </main>
     </div>

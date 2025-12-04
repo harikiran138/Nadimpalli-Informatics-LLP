@@ -8,19 +8,7 @@ export function Hero() {
 
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-            {/* Background Video */}
-            <div className="absolute inset-0 z-0">
-                <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover"
-                >
-                    <source src="/hero-video.mp4" type="video/mp4" />
-                </video>
-
-            </div>
+            {/* Background Video - Removed for global page background */}
 
             {/* Gradient Overlay for Blending */}
 
