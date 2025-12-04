@@ -56,10 +56,10 @@ export function About() {
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.1 }}
                             whileHover={{ y: -10 }}
-                            className="group relative h-80 p-8 rounded-[2rem] bg-white border border-slate-200 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col justify-between overflow-hidden"
+                            className="group relative h-80 p-8 rounded-[2rem] bg-gradient-to-br from-white to-purple-50/50 border border-purple-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col justify-between overflow-hidden"
                         >
                             {/* Hover Accent Background */}
-                            <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500 ${feature.color.replace('bg-', 'bg-')}`} />
+                            <div className={`absolute inset-0 opacity-10 group-hover:opacity-10 transition-opacity duration-500 ${feature.color.replace('bg-', 'bg-')}`} />
 
                             {/* Top Accent Line */}
                             <div className={`absolute top-0 left-0 w-full h-1 ${feature.color} transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500`} />

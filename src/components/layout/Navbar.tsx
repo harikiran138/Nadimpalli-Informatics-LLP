@@ -19,7 +19,7 @@ export function Navbar() {
             <div className="fixed top-6 left-6 z-50 hidden md:block">
                 <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600" />
-                    <span className="text-lg font-bold tracking-tight text-white drop-shadow-md">
+                    <span className="text-lg font-bold tracking-tight text-[#0b3a7a]">
                         Nadimpalli Informatics LLP
                     </span>
                 </div>
