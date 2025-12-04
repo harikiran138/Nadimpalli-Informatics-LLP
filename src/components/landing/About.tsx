@@ -38,14 +38,7 @@ export function About() {
         <section id="about" className="pb-32 pt-0 relative overflow-hidden">
             {/* Background Elements */}
             <div className="absolute inset-0">
-                <video
-                    muted
-                    playsInline
-                    onLoadedMetadata={(e) => e.currentTarget.currentTime = 1}
-                    className="w-full h-full object-cover scale-x-[-1]"
-                >
-                    <source src="/hero-video.mp4" type="video/mp4" />
-                </video>
+                <div className="absolute inset-0 bg-[url('/video-wallpaper-3d.jpeg')] bg-cover bg-center bg-no-repeat" />
             </div>
             <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px] pointer-events-none" />
             <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[100px] pointer-events-none" />
