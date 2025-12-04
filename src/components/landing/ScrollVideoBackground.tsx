@@ -36,7 +36,7 @@ export function ScrollVideoBackground() {
     }, []);
 
     return (
-        <div className="fixed inset-0 z-[-1] overflow-hidden">
+        <div className="fixed inset-0 z-[-1] overflow-hidden bg-black">
             <video
                 ref={videoRef}
                 muted
