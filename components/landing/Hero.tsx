@@ -1,14 +1,11 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ChevronRight } from "lucide-react";
 
 export function Hero() {
-    const { scrollY } = useScroll();
-    const y1 = useTransform(scrollY, [0, 500], [0, 200]);
-    const y2 = useTransform(scrollY, [0, 500], [0, -150]);
     const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
@@ -30,20 +27,20 @@ export function Hero() {
                     muted
                     playsInline
                     preload="auto"
-                    className="absolute inset-0 w-full h-full object-cover opacity-40"
+                    className="absolute inset-0 w-full h-full object-cover"
                 >
                     <source src="/hero-video.mp4" type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
             </div>
 
-            <div className="container mx-auto px-4 z-10 grid lg:grid-cols-2 gap-12 items-center">
+            <div className="container mx-auto px-4 z-10 flex flex-col items-center justify-center text-center">
                 {/* Text Content */}
                 <motion.div
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="text-left"
+                    className="max-w-4xl flex flex-col items-center"
                 >
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -70,7 +67,7 @@ export function Hero() {
                         Seamless technology for the smartest campuses. Precision-built modules for the modern educational ecosystem.
                     </p>
 
-                    <div className="flex flex-wrap gap-4">
+                    <div className="flex flex-wrap gap-4 justify-center">
                         <Button size="lg" className="h-14 px-8 rounded-full bg-black hover:bg-black/80 text-slate-200 text-lg shadow-[0_0_20px_rgba(0,0,0,0.3)] border border-slate-700">
                             Get a Demo
                             <ChevronRight className="ml-2 h-5 w-5" />
@@ -80,42 +77,6 @@ export function Hero() {
                         </Button>
                     </div>
                 </motion.div>
-
-                {/* 3D Abstract Glass Visual */}
-                <div className="relative h-[600px] w-full flex items-center justify-center perspective-1000">
-                    <motion.div
-                        style={{ y: y2, rotateX: 10, rotateY: -10 }}
-                        className="relative w-80 h-80 md:w-96 md:h-96"
-                    >
-                        {/* Layer 1: Back Plate */}
-                        <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                            className="absolute inset-0 rounded-[3rem] border border-white/5 bg-black/40 backdrop-blur-xl shadow-2xl"
-                        />
-
-                        {/* Layer 2: Middle Ring */}
-                        <motion.div
-                            animate={{ rotate: -360 }}
-                            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                            className="absolute inset-8 rounded-full border-2 border-dashed border-white/10"
-                        />
-
-                        {/* Layer 3: Core Lens */}
-                        <motion.div
-                            animate={{ scale: [1, 1.05, 1] }}
-                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute inset-20 rounded-full bg-gradient-to-br from-white/10 to-transparent border border-white/20 backdrop-blur-2xl shadow-[0_0_50px_rgba(20,123,255,0.2)] flex items-center justify-center"
-                        >
-                            <div className="w-32 h-32 rounded-full bg-black/80 border border-white/10 flex items-center justify-center relative overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent" />
-                                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-white/20 to-transparent border border-white/30" />
-                            </div>
-                        </motion.div>
-
-                        {/* Floating Elements Removed */}
-                    </motion.div>
-                </div>
             </div>
         </section>
     );
