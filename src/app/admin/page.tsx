@@ -1,48 +1,35 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Users, Activity, Server, LogOut, Bell, Search, Settings, Shield } from "lucide-react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Users, Activity, Shield, LogOut, Search, Plus, Save, X, Trash2, Edit2, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-
 import { createClient } from "@/lib/supabase/client";
-import { useState } from "react";
 
 const supabase = createClient();
 
-const stats = [
-    {
-        title: "Total Employees",
-        value: "1,234",
-        change: "+12%",
-        icon: <Users className="w-6 h-6 text-cyan-400" />,
-        bg: "bg-cyan-500/10",
-        border: "border-cyan-500/20",
-        text: "text-cyan-400"
-    },
-    {
-        title: "Active Sessions",
-        value: "856",
-        change: "+5%",
-        icon: <Activity className="w-6 h-6 text-blue-400" />,
-        bg: "bg-blue-500/10",
-        border: "border-blue-500/20",
-        text: "text-blue-400"
-    },
-    {
-        title: "System Status",
-        value: "99.9%",
-        change: "Stable",
-        icon: <Server className="w-6 h-6 text-purple-400" />,
-        bg: "bg-purple-500/10",
-        border: "border-purple-500/20",
-        text: "text-purple-400"
-    },
-];
+interface Employee {
+    id: string;
+    employee_id: string;
+    full_name: string;
+    password_hash: string;
+    created_at: string;
+}
 
 export default function AdminDashboard() {
-    const [loading, setLoading] = useState(false);
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [adminIds, setAdminIds] = useState<Set<string>>(new Set());
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    // Editing State
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editForm, setEditForm] = useState<Partial<Employee>>({});
+
+    // Create State
+    const [showCreate, setShowCreate] = useState(false);
     const [newEmployee, setNewEmployee] = useState({
         fullName: "",
         employeeId: "",
@@ -50,231 +37,490 @@ export default function AdminDashboard() {
         isAdmin: false
     });
 
-    const handleCreateEmployee = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
+    const videoRef = useRef<HTMLVideoElement>(null);
 
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.playbackRate = 0.75;
+        }
+    }, []);
+
+    // Fetch Data
+    const fetchData = useCallback(async () => {
         try {
-            // 1. Create Employee
-            const { error: empError } = await supabase
+            const { data: emps, error: empError } = await supabase
                 .from('employees')
-                .insert([{
-                    full_name: newEmployee.fullName,
-                    employee_id: newEmployee.employeeId,
-                    password_hash: newEmployee.password
-                }]);
+                .select('*')
+                .order('created_at', { ascending: false });
 
             if (empError) throw empError;
 
-            // 2. Grant Admin Access if checked
-            if (newEmployee.isAdmin) {
-                const { error: adminError } = await supabase
-                    .from('admins')
-                    .insert([{
-                        employee_id: newEmployee.employeeId
-                    }]);
+            const { data: adms, error: admError } = await supabase
+                .from('admins')
+                .select('employee_id');
 
-                if (adminError) throw adminError;
-            }
+            if (admError) throw admError;
 
-            // Reset form
-            setNewEmployee({ fullName: "", employeeId: "", password: "", isAdmin: false });
-            alert("Employee created successfully!");
-
-        } catch (error: any) {
-            console.error("Error creating employee:", error);
-            alert("Failed to create employee: " + error.message);
+            setEmployees(emps || []);
+            setAdminIds(new Set(adms?.map(a => a.employee_id) || []));
+        } catch (error) {
+            console.error("Error fetching data:", error);
         } finally {
             setLoading(false);
         }
+    }, []);
+
+    // Initial Fetch & Subscription
+    useEffect(() => {
+        fetchData();
+
+        const empChannel = supabase
+            .channel('public:employees')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, fetchData)
+            .subscribe();
+
+        const admChannel = supabase
+            .channel('public:admins')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'admins' }, fetchData)
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(empChannel);
+            supabase.removeChannel(admChannel);
+        };
+    }, [fetchData]);
+
+    // Handlers
+    const handleCreate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const { error: empError } = await supabase.from('employees').insert([{
+                full_name: newEmployee.fullName,
+                employee_id: newEmployee.employeeId,
+                password_hash: newEmployee.password
+            }]);
+            if (empError) throw empError;
+
+            if (newEmployee.isAdmin) {
+                await supabase.from('admins').insert([{ employee_id: newEmployee.employeeId }]);
+            }
+
+            setNewEmployee({ fullName: "", employeeId: "", password: "", isAdmin: false });
+            setShowCreate(false);
+        } catch (error: any) {
+            alert("Error creating: " + error.message);
+        }
+    };
+
+    const handleUpdate = async (id: string) => {
+        try {
+            const { error } = await supabase
+                .from('employees')
+                .update({
+                    full_name: editForm.full_name,
+                    employee_id: editForm.employee_id
+                })
+                .eq('id', id);
+
+            if (error) throw error;
+            setEditingId(null);
+        } catch (error: any) {
+            alert("Error updating: " + error.message);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure? This action cannot be undone.")) return;
+        try {
+            await supabase.from('employees').delete().eq('id', id);
+        } catch (error: any) {
+            alert("Error deleting: " + error.message);
+        }
+    };
+
+    const filteredEmployees = employees.filter(e =>
+        e.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        e.employee_id.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Animation Variants
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        show: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        show: { opacity: 1, y: 0 }
     };
 
     return (
-        <div className="flex h-screen overflow-hidden">
-            {/* Glass Sidebar */}
-            <aside className="w-64 hidden md:flex flex-col h-full bg-black/20 backdrop-blur-xl border-r border-white/10 relative z-20">
-                <div className="p-6 border-b border-white/10">
+        <div className="flex h-screen overflow-hidden font-sans relative text-slate-800">
+            {/* Background Video Layer */}
+            <div className="fixed inset-0 z-0">
+                <video
+                    ref={videoRef}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover opacity-20"
+                >
+                    <source src="/hero-video.mp4" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-[#E0E5EC]/80 backdrop-blur-sm" />
+            </div>
+
+            {/* 3D Floating Shapes */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+                <motion.div
+                    animate={{ rotate: 360, y: [0, -20, 0] }}
+                    transition={{ rotate: { duration: 20, repeat: Infinity, ease: "linear" }, y: { duration: 5, repeat: Infinity, ease: "easeInOut" } }}
+                    className="absolute top-[-10%] right-[-5%] w-96 h-96 rounded-full border-[40px] border-white/40 shadow-[20px_20px_60px_#bebebe,-20px_-20px_60px_#ffffff] opacity-40"
+                />
+                <motion.div
+                    animate={{ y: [0, 30, 0] }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute top-[10%] left-[10%] w-24 h-24 rounded-full bg-gradient-to-br from-slate-100 to-slate-300 shadow-[10px_10px_30px_#bebebe,-10px_-10px_30px_#ffffff] opacity-60"
+                />
+                <motion.div
+                    animate={{ rotate: -360, x: [0, 20, 0] }}
+                    transition={{ rotate: { duration: 25, repeat: Infinity, ease: "linear" }, x: { duration: 8, repeat: Infinity, ease: "easeInOut" } }}
+                    className="absolute bottom-[-5%] left-[-5%] w-80 h-80 rounded-full border-[30px] border-white/30 shadow-[20px_20px_60px_#bebebe,-20px_-20px_60px_#ffffff] opacity-30"
+                />
+            </div>
+
+            {/* Sidebar */}
+            <motion.aside
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="w-72 hidden md:flex flex-col h-full m-4 rounded-[2rem] bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] relative z-20"
+            >
+                <div className="p-8 border-b border-white/20">
                     <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-[0_0_15px_rgba(59,130,246,0.5)] flex items-center justify-center">
-                            <Shield className="w-5 h-5 text-white" />
+                        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg shadow-blue-500/20 flex items-center justify-center">
+                            <Shield className="w-6 h-6 text-white" />
                         </div>
-                        <span className="text-lg font-bold text-white tracking-wide">Admin Panel</span>
+                        <div>
+                            <h1 className="text-xl font-bold tracking-tight text-slate-800">Admin<span className="text-blue-600">Panel</span></h1>
+                            <p className="text-xs text-slate-500 font-medium">Management System</p>
+                        </div>
                     </div>
                 </div>
-
-                <nav className="flex-1 p-4 space-y-2">
-                    <Button variant="ghost" className="w-full justify-start text-white bg-white/10 font-medium hover:bg-white/20 hover:text-white transition-all">
-                        <Activity className="w-4 h-4 mr-3 text-blue-400" /> Dashboard
+                <nav className="flex-1 p-6 space-y-3">
+                    <Button variant="ghost" className="w-full justify-start h-12 rounded-xl bg-blue-600/10 text-blue-700 font-bold hover:bg-blue-600/20 transition-all hover:scale-105 active:scale-95">
+                        <Activity className="w-5 h-5 mr-3" /> Live Dashboard
                     </Button>
-                    <Button variant="ghost" className="w-full justify-start text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-                        <Users className="w-4 h-4 mr-3" /> Employees
-                    </Button>
-                    <Button variant="ghost" className="w-full justify-start text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-                        <Settings className="w-4 h-4 mr-3" /> Settings
+                    <Button variant="ghost" className="w-full justify-start h-12 rounded-xl text-slate-600 font-medium hover:bg-white/40 hover:text-slate-900 transition-all hover:scale-105 active:scale-95">
+                        <Users className="w-5 h-5 mr-3" /> Employees
                     </Button>
                 </nav>
-
-                <div className="p-4 border-t border-white/10">
+                <div className="p-6 border-t border-white/20">
                     <Link href="/login">
-                        <Button variant="ghost" className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all">
-                            <LogOut className="w-4 h-4 mr-3" /> Logout
+                        <Button variant="ghost" className="w-full justify-start h-12 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 font-medium transition-all hover:scale-105 active:scale-95">
+                            <LogOut className="w-5 h-5 mr-3" /> Logout
                         </Button>
                     </Link>
                 </div>
-            </aside>
+            </motion.aside>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-y-auto relative z-10">
-                {/* Glass Header */}
-                <header className="sticky top-0 z-30 px-8 py-4 flex items-center justify-between bg-black/10 backdrop-blur-md border-b border-white/5">
-                    <h1 className="text-2xl font-bold text-white tracking-tight">Dashboard Overview</h1>
+            <main className="flex-1 flex flex-col overflow-hidden relative z-10 p-4 pl-0">
+                {/* Header */}
+                <motion.header
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="h-24 px-8 mb-4 rounded-[2rem] bg-white/40 backdrop-blur-2xl border border-white/50 shadow-sm flex items-center justify-between"
+                >
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-800">Dashboard Overview</h1>
+                        <p className="text-slate-500 text-sm">Welcome back, Admin</p>
+                    </div>
                     <div className="flex items-center gap-4">
-                        <div className="relative hidden md:block w-64">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <div className="relative w-72 group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                             <Input
-                                placeholder="Search..."
-                                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:bg-white/10 focus:border-blue-500/50 transition-all rounded-xl"
+                                placeholder="Search employees..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-12 h-12 bg-white/50 border-white/60 text-slate-800 placeholder:text-slate-400 focus:bg-white/80 focus:border-blue-500/30 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all shadow-sm hover:shadow-md"
                             />
                         </div>
-                        <Button size="icon" variant="ghost" className="text-slate-400 hover:text-white hover:bg-white/10 rounded-full">
-                            <Bell className="w-5 h-5" />
+                        <Button
+                            onClick={() => setShowCreate(!showCreate)}
+                            className="h-12 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl px-6 shadow-lg shadow-blue-600/20 font-medium transition-all hover:scale-105 active:scale-95"
+                        >
+                            <Plus className="w-5 h-5 mr-2" /> Add Employee
                         </Button>
-                        <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 border border-white/20 shadow-lg" />
                     </div>
-                </header>
+                </motion.header>
 
-                <div className="p-8 space-y-8">
-                    {/* Create Employee Section */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl overflow-hidden"
-                    >
-                        <div className="p-6 border-b border-white/10">
-                            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                                <Users className="w-5 h-5 text-blue-400" />
-                                Create New Employee
-                            </h2>
-                        </div>
-                        <div className="p-6">
-                            <form onSubmit={handleCreateEmployee} className="space-y-4">
-                                <div className="grid md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-slate-400">Full Name</label>
-                                        <Input
-                                            required
-                                            placeholder="e.g. Alice Smith"
-                                            value={newEmployee.fullName}
-                                            onChange={(e) => setNewEmployee({ ...newEmployee, fullName: e.target.value })}
-                                            className="bg-black/20 border-white/10 text-white placeholder:text-slate-600 focus:bg-black/40"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-slate-400">Employee ID</label>
-                                        <Input
-                                            required
-                                            placeholder="e.g. EMP001"
-                                            value={newEmployee.employeeId}
-                                            onChange={(e) => setNewEmployee({ ...newEmployee, employeeId: e.target.value })}
-                                            className="bg-black/20 border-white/10 text-white placeholder:text-slate-600 focus:bg-black/40"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="grid md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium text-slate-400">Password</label>
-                                        <Input
-                                            required
-                                            type="password"
-                                            placeholder="••••••••"
-                                            value={newEmployee.password}
-                                            onChange={(e) => setNewEmployee({ ...newEmployee, password: e.target.value })}
-                                            className="bg-black/20 border-white/10 text-white placeholder:text-slate-600 focus:bg-black/40"
-                                        />
-                                    </div>
-                                    <div className="flex items-end pb-2">
-                                        <label className="flex items-center gap-3 cursor-pointer group">
-                                            <div className="relative">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={newEmployee.isAdmin}
-                                                    onChange={(e) => setNewEmployee({ ...newEmployee, isAdmin: e.target.checked })}
-                                                    className="peer sr-only"
-                                                />
-                                                <div className="w-10 h-6 bg-slate-700 rounded-full peer-checked:bg-blue-500 transition-colors"></div>
-                                                <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
-                                            </div>
-                                            <span className="text-slate-300 font-medium group-hover:text-white transition-colors">Grant Admin Access</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div className="pt-2">
-                                    <Button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="bg-blue-600 hover:bg-blue-500 text-white font-bold"
-                                    >
-                                        {loading ? "Creating..." : "Create Employee"}
-                                    </Button>
-                                </div>
-                            </form>
-                        </div>
-                    </motion.div>
+                {/* Scrollable Content */}
+                <motion.div
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="show"
+                    className="flex-1 overflow-y-auto space-y-6 pr-2 custom-scrollbar"
+                >
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <StatCard
+                            title="Total Employees"
+                            value={employees.length}
+                            icon={<Users className="w-6 h-6 text-blue-600" />}
+                            color="blue"
+                            delay={0}
+                        />
+                        <StatCard
+                            title="Administrators"
+                            value={adminIds.size}
+                            icon={<Shield className="w-6 h-6 text-purple-600" />}
+                            color="purple"
+                            delay={0.1}
+                        />
+                        <StatCard
+                            title="System Status"
+                            value="Active"
+                            icon={<Activity className="w-6 h-6 text-emerald-600" />}
+                            color="emerald"
+                            delay={0.2}
+                        />
+                    </div>
 
-                    {/* Stats Grid */}
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {stats.map((stat, index) => (
+                    {/* Create Form (Collapsible) */}
+                    <AnimatePresence>
+                        {showCreate && (
                             <motion.div
-                                key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className={`p-6 rounded-2xl border ${stat.border} ${stat.bg} backdrop-blur-md hover:bg-opacity-20 transition-all duration-300`}
+                                initial={{ height: 0, opacity: 0, scale: 0.95 }}
+                                animate={{ height: "auto", opacity: 1, scale: 1 }}
+                                exit={{ height: 0, opacity: 0, scale: 0.95 }}
+                                className="overflow-hidden"
                             >
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className={`p-3 rounded-xl bg-black/20 border border-white/5`}>
-                                        {stat.icon}
-                                    </div>
-                                    <span className={`text-xs font-bold px-2 py-1 rounded-full bg-black/20 border border-white/5 ${stat.text}`}>
-                                        {stat.change}
-                                    </span>
-                                </div>
-                                <h3 className="text-slate-400 text-sm font-medium mb-1">{stat.title}</h3>
-                                <p className="text-3xl font-bold text-white tracking-tight">{stat.value}</p>
-                            </motion.div>
-                        ))}
-                    </div>
+                                <div className="bg-white/60 border border-white/60 rounded-[2rem] p-8 backdrop-blur-xl shadow-lg relative overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/40 to-transparent pointer-events-none" />
 
-                    {/* Recent Activity */}
+                                    <h3 className="text-xl font-bold mb-6 flex items-center gap-3 text-slate-800 relative z-10">
+                                        <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
+                                            <Plus className="w-5 h-5" />
+                                        </div>
+                                        New Employee Details
+                                    </h3>
+                                    <form onSubmit={handleCreate} className="grid md:grid-cols-2 gap-6 relative z-10">
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-slate-700 ml-1">Full Name</label>
+                                                <Input
+                                                    placeholder="e.g. John Doe"
+                                                    value={newEmployee.fullName}
+                                                    onChange={e => setNewEmployee({ ...newEmployee, fullName: e.target.value })}
+                                                    className="h-12 rounded-xl bg-white/50 border-white/60 focus:bg-white/80 transition-all hover:bg-white/70"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-slate-700 ml-1">Employee ID</label>
+                                                <Input
+                                                    placeholder="e.g. EMP001"
+                                                    value={newEmployee.employeeId}
+                                                    onChange={e => setNewEmployee({ ...newEmployee, employeeId: e.target.value })}
+                                                    className="h-12 rounded-xl bg-white/50 border-white/60 focus:bg-white/80 transition-all hover:bg-white/70"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-slate-700 ml-1">Password</label>
+                                                <Input
+                                                    type="password"
+                                                    placeholder="••••••••"
+                                                    value={newEmployee.password}
+                                                    onChange={e => setNewEmployee({ ...newEmployee, password: e.target.value })}
+                                                    className="h-12 rounded-xl bg-white/50 border-white/60 focus:bg-white/80 transition-all hover:bg-white/70"
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="pt-8">
+                                                <label className="flex items-center gap-4 p-4 rounded-xl bg-white/50 border border-white/60 cursor-pointer hover:bg-white/80 transition-all group hover:shadow-sm">
+                                                    <div className="relative flex items-center">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={newEmployee.isAdmin}
+                                                            onChange={e => setNewEmployee({ ...newEmployee, isAdmin: e.target.checked })}
+                                                            className="peer sr-only"
+                                                        />
+                                                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                    </div>
+                                                    <span className="text-sm font-bold text-slate-600 group-hover:text-slate-800 transition-colors">Grant Admin Privileges</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div className="md:col-span-2 flex justify-end gap-3 mt-4">
+                                            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)} className="h-12 px-6 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100">Cancel</Button>
+                                            <Button type="submit" className="h-12 px-8 bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-600/20 font-bold hover:scale-105 active:scale-95 transition-all">Create Account</Button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Employee List */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.3 }}
-                        className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl overflow-hidden"
+                        variants={itemVariants}
+                        className="bg-white/40 border border-white/50 rounded-[2rem] overflow-hidden backdrop-blur-2xl shadow-sm hover:shadow-md transition-shadow duration-300"
                     >
-                        <div className="p-6 border-b border-white/10 flex justify-between items-center">
-                            <h2 className="text-lg font-bold text-white">Recent Activity</h2>
-                            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white hover:bg-white/5">View All</Button>
-                        </div>
-                        <div className="p-6">
-                            <div className="space-y-6">
-                                {[1, 2, 3].map((_, i) => (
-                                    <div key={i} className="flex items-center gap-4 pb-6 border-b border-white/5 last:border-0 last:pb-0 group">
-                                        <div className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 font-medium group-hover:bg-white/10 transition-colors">
-                                            JD
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-white font-medium group-hover:text-blue-400 transition-colors">John Doe logged in</p>
-                                            <p className="text-slate-500 text-sm">2 minutes ago</p>
-                                        </div>
-                                        <div className="text-sm text-slate-500 font-mono bg-black/20 px-2 py-1 rounded">IP: 192.168.1.1</div>
-                                    </div>
-                                ))}
+                        <div className="p-8 border-b border-white/20 flex justify-between items-center">
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-800">Employee Directory</h2>
+                                <p className="text-sm text-slate-500">Manage your team members</p>
                             </div>
+                            <span className="text-xs font-bold text-blue-600 bg-blue-100 px-3 py-1.5 rounded-full">
+                                {filteredEmployees.length} Records
+                            </span>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-white/30 text-slate-500 text-xs uppercase tracking-wider font-bold">
+                                    <tr>
+                                        <th className="p-6">Employee</th>
+                                        <th className="p-6">ID</th>
+                                        <th className="p-6">Role</th>
+                                        <th className="p-6 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/20">
+                                    {filteredEmployees.map((emp, index) => (
+                                        <motion.tr
+                                            key={emp.id}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: index * 0.05 }}
+                                            className="hover:bg-white/40 transition-colors group"
+                                        >
+                                            <td className="p-6">
+                                                {editingId === emp.id ? (
+                                                    <Input
+                                                        value={editForm.full_name}
+                                                        onChange={e => setEditForm({ ...editForm, full_name: e.target.value })}
+                                                        className="h-10 bg-white/80 border-blue-200"
+                                                        autoFocus
+                                                    />
+                                                ) : (
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-slate-200 to-white border border-white shadow-sm flex items-center justify-center text-sm font-bold text-slate-600 group-hover:scale-110 transition-transform">
+                                                            {emp.full_name.charAt(0)}
+                                                        </div>
+                                                        <span className="font-bold text-slate-700">{emp.full_name}</span>
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="p-6 text-slate-500 font-mono text-sm font-medium">
+                                                {editingId === emp.id ? (
+                                                    <Input
+                                                        value={editForm.employee_id}
+                                                        onChange={e => setEditForm({ ...editForm, employee_id: e.target.value })}
+                                                        className="h-10 bg-white/80 border-blue-200"
+                                                    />
+                                                ) : (
+                                                    emp.employee_id
+                                                )}
+                                            </td>
+                                            <td className="p-6">
+                                                {adminIds.has(emp.employee_id) ? (
+                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-100 text-purple-600 text-xs font-bold border border-purple-200 shadow-sm">
+                                                        <Shield className="w-3 h-3" /> Admin
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-500 text-xs font-bold border border-slate-200 shadow-sm">
+                                                        <Users className="w-3 h-3" /> User
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="p-6 text-right">
+                                                {editingId === emp.id ? (
+                                                    <div className="flex justify-end gap-2">
+                                                        <Button size="icon" variant="ghost" onClick={() => handleUpdate(emp.id)} className="h-9 w-9 bg-green-100 text-green-600 hover:bg-green-200 rounded-full hover:scale-110 transition-transform">
+                                                            <CheckCircle className="w-5 h-5" />
+                                                        </Button>
+                                                        <Button size="icon" variant="ghost" onClick={() => setEditingId(null)} className="h-9 w-9 bg-slate-100 text-slate-500 hover:bg-slate-200 rounded-full hover:scale-110 transition-transform">
+                                                            <X className="w-5 h-5" />
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            onClick={() => {
+                                                                setEditingId(emp.id);
+                                                                setEditForm(emp);
+                                                            }}
+                                                            className="h-9 w-9 text-blue-500 hover:bg-blue-50 hover:text-blue-600 rounded-full hover:scale-110 transition-transform"
+                                                        >
+                                                            <Edit2 className="w-4 h-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            onClick={() => handleDelete(emp.id)}
+                                                            className="h-9 w-9 text-red-400 hover:bg-red-50 hover:text-red-500 rounded-full hover:scale-110 transition-transform"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </td>
+                                        </motion.tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {filteredEmployees.length === 0 && (
+                                <div className="p-12 text-center text-slate-400 flex flex-col items-center gap-4">
+                                    <div className="p-4 rounded-full bg-slate-100">
+                                        <Search className="w-8 h-8 text-slate-300" />
+                                    </div>
+                                    <p>No employees found matching your search.</p>
+                                </div>
+                            )}
                         </div>
                     </motion.div>
-                </div>
+                </motion.div>
             </main>
         </div>
+    );
+}
+
+function StatCard({ title, value, icon, color, delay }: { title: string, value: number | string, icon: React.ReactNode, color: string, delay: number }) {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay }}
+            whileHover={{ y: -5, scale: 1.02 }}
+            className={`p-6 rounded-[2rem] bg-white/40 border border-white/50 backdrop-blur-xl relative overflow-hidden group hover:bg-white/60 transition-all duration-300 shadow-sm hover:shadow-xl`}
+        >
+            <div className={`absolute -right-6 -top-6 w-32 h-32 bg-${color}-500/10 rounded-full blur-3xl group-hover:bg-${color}-500/20 transition-colors`} />
+
+            <div className="relative z-10">
+                <div className="flex justify-between items-start mb-6">
+                    <div className={`p-3.5 rounded-2xl bg-white/60 border border-white/60 shadow-sm text-${color}-600 group-hover:scale-110 transition-transform duration-300`}>
+                        {icon}
+                    </div>
+                    <span className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-full bg-${color}-50 text-${color}-600 border border-${color}-100`}>
+                        Live
+                    </span>
+                </div>
+                <h3 className="text-slate-500 text-sm font-bold mb-1 uppercase tracking-wide">{title}</h3>
+                <p className="text-4xl font-extrabold text-slate-800 tracking-tight">{value}</p>
+            </div>
+        </motion.div>
     );
 }

@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Lock, User, Loader2, ArrowLeft } from "lucide-react";
+import { Lock, User, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import Loader from "@/components/ui/Loader";
 
 const supabase = createClient();
 
@@ -165,29 +166,32 @@ export default function LoginPage() {
 
                         <Button
                             type="submit"
+                            className="w-full h-12 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-all shadow-lg shadow-blue-600/20"
                             disabled={loading}
-                            className="w-full h-12 rounded-xl bg-black hover:bg-slate-900 text-white text-lg font-bold shadow-lg shadow-black/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                         >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Signing in...
-                                </>
-                            ) : (
-                                "Sign In"
-                            )}
+                            Sign In
                         </Button>
                     </form>
 
-                    <div className="mt-8 text-center relative z-10">
-                        <p className="text-sm text-slate-700 font-medium">
+                    <div className="mt-8 text-center">
+                        <p className="text-slate-400 text-sm">
                             Don't have an account?{" "}
-                            <Link href="/signup" className="text-black hover:text-slate-800 font-bold hover:underline">
+                            <Link href="/signup" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
                                 Sign up
                             </Link>
                         </p>
                     </div>
                 </div>
             </motion.div>
+
+            {/* Full Screen Loader Overlay */}
+            {loading && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+                    <div className="scale-50 md:scale-75">
+                        <Loader />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
