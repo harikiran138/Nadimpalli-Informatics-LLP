@@ -18,21 +18,7 @@ export function Hero() {
 
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-            {/* Background Video */}
-            <div className="absolute inset-0 z-0">
-                <video
-                    ref={videoRef}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="auto"
-                    className="absolute inset-0 w-full h-full object-cover"
-                >
-                    <source src="/hero-video.mp4" type="video/mp4" />
-                    Your browser does not support the video tag.
-                </video>
-            </div>
+            {/* Background Video removed - now global */}
 
             <div className="container mx-auto px-4 z-10 flex flex-col items-start justify-center text-left">
                 {/* Text Content */}

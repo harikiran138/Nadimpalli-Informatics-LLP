@@ -21,7 +21,7 @@ export function Navbar() {
                 <Link href="/" className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600" />
                     <span className="text-lg font-bold tracking-tight text-white">
-                        Nadimpalli Informatics
+                        Nadimpalli Informatics LLP
                     </span>
                 </Link>
 
@@ -53,7 +53,7 @@ export function Navbar() {
                         <div className="flex flex-col gap-8 pt-10">
                             <Link href="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
                                 <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600" />
-                                <span className="text-lg font-bold">Nadimpalli Informatics</span>
+                                <span className="text-lg font-bold">Nadimpalli Informatics LLP</span>
                             </Link>
                             <nav className="flex flex-col gap-4">
                                 {navLinks.map((link) => (
