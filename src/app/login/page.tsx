@@ -40,7 +40,19 @@ export default function LoginPage() {
             localStorage.setItem("user_id", employee.employee_id);
             localStorage.setItem("user_name", employee.full_name);
 
-            // 3. Check for Profile
+            // 3. Check if Admin
+            const { data: admin } = await supabase
+                .from('admins')
+                .select('*')
+                .eq('employee_id', employee.employee_id)
+                .single();
+
+            if (admin) {
+                router.push("/admin");
+                return;
+            }
+
+            // 4. Check for Profile
             const { data: profile } = await supabase
                 .from('teacher_profiles')
                 .select('*')

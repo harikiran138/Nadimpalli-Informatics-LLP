@@ -47,4 +47,5 @@ CREATE TABLE IF NOT EXISTS public.teacher_profiles (
 -- RLS for Profiles
 ALTER TABLE public.teacher_profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access" ON public.teacher_profiles FOR SELECT USING (true);
-CREATE POLICY "Allow individual update" ON public.teacher_profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Allow public update" ON public.teacher_profiles FOR UPDATE USING (true);
+CREATE POLICY "Allow public insert" ON public.teacher_profiles FOR INSERT WITH CHECK (true);
