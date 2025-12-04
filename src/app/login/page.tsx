@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -15,30 +15,17 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
-    const supabase = createClient();
-
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
 
-        try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
-
-            if (error) {
-                setError(error.message);
-            } else {
-                router.push("/"); // Redirect to home or dashboard after login
-                router.refresh();
-            }
-        } catch (err) {
-            setError("An unexpected error occurred");
-        } finally {
+        // Mock login for build/demo purposes
+        setTimeout(() => {
             setLoading(false);
-        }
+            router.push("/");
+            router.refresh();
+        }, 1000);
     };
 
     return (
