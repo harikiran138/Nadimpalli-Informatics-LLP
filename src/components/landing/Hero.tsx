@@ -15,7 +15,7 @@ export function Hero() {
                     loop
                     muted
                     playsInline
-                    className="w-full h-full object-cover opacity-50"
+                    className="w-full h-full object-cover"
                 >
                     <source src="/hero-video.mp4" type="video/mp4" />
                 </video>

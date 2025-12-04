@@ -10,17 +10,17 @@ const features = [
         description: "Enterprise-grade encryption and threat protection built into every layer.",
     },
     {
-        icon: <Zap className="w-8 h-8 text-accent" />,
+        icon: <Zap className="w-8 h-8 text-accent-foreground" />,
         title: "Speed",
         description: "Optimized performance ensuring lightning-fast interactions and data processing.",
     },
     {
-        icon: <Server className="w-8 h-8 text-purple-400" />,
+        icon: <Server className="w-8 h-8 text-purple-600" />,
         title: "Reliability",
         description: "99.99% uptime guarantee with redundant infrastructure and failover systems.",
     },
     {
-        icon: <Cpu className="w-8 h-8 text-blue-400" />,
+        icon: <Cpu className="w-8 h-8 text-blue-600" />,
         title: "Innovation",
         description: "Constantly evolving technology stack to keep you ahead of the curve.",
     },
@@ -35,11 +35,11 @@ export function About() {
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-3xl md:text-5xl font-bold mb-6"
+                        className="text-3xl md:text-5xl font-bold mb-6 text-slate-900"
                     >
-                        Core <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Architecture</span>
+                        Core <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">Architecture</span>
                     </motion.h2>
-                    <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+                    <p className="text-slate-600 max-w-2xl mx-auto text-lg">
                         Built on a foundation of cutting-edge principles designed for the future of education.
                     </p>
                 </div>
@@ -52,32 +52,20 @@ export function About() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.1 }}
-                            whileHover={{ scale: 1.02 }}
-                            className="group relative h-64 rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] overflow-hidden"
+                            whileHover={{ y: -5 }}
+                            className="group relative p-8 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300"
                         >
-                            {/* Internal Glow Lines */}
-                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-                                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-                                <div className="absolute top-0 left-0 h-full w-[1px] bg-gradient-to-b from-transparent via-primary/50 to-transparent" />
-                                <div className="absolute top-0 right-0 h-full w-[1px] bg-gradient-to-b from-transparent via-primary/50 to-transparent" />
+                            <div className="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-100 w-fit group-hover:bg-primary/5 transition-colors duration-300">
+                                {feature.icon}
                             </div>
 
-                            <div className="relative z-10">
-                                <div className="mb-6 p-4 rounded-2xl bg-black/40 border border-white/10 w-fit group-hover:border-primary/50 transition-colors duration-300 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-                                    {feature.icon}
-                                </div>
-                                <h3 className="text-xl font-semibold mb-3 text-white group-hover:text-primary transition-colors">
-                                    {feature.title}
-                                </h3>
-                                <p className="text-muted-foreground text-sm leading-relaxed">
-                                    {feature.description}
-                                </p>
-                            </div>
+                            <h3 className="text-xl font-bold mb-3 text-slate-900 group-hover:text-primary transition-colors">
+                                {feature.title}
+                            </h3>
 
-                            {/* Corner Accents */}
-                            <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-white/20 rounded-tl-xl" />
-                            <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-white/20 rounded-br-xl" />
+                            <p className="text-slate-600 leading-relaxed">
+                                {feature.description}
+                            </p>
                         </motion.div>
                     ))}
                 </div>
