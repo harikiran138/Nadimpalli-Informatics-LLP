@@ -1,38 +1,60 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import { useScroll, useSpring, useMotionValueEvent } from "framer-motion";
 
 export function ScrollVideoBackground() {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const { scrollYProgress } = useScroll();
-
-    // Smooth out the scroll progress to prevent jittery playback
-    const smoothProgress = useSpring(scrollYProgress, {
-        stiffness: 300,
-        damping: 30,
-        restDelta: 0.001
-    });
-
-    useMotionValueEvent(smoothProgress, "change", (latest) => {
-        if (videoRef.current && videoRef.current.duration) {
-            // Map scroll progress (0 to 1) to video duration
-            // Ensure we don't exceed duration
-            const targetTime = latest * videoRef.current.duration;
-
-            // Check if the time difference is significant enough to update
-            // This helps performance by avoiding micro-updates
-            if (Math.abs(videoRef.current.currentTime - targetTime) > 0.01) {
-                videoRef.current.currentTime = targetTime;
-            }
-        }
-    });
+    const requestRef = useRef<number>();
+    const targetTimeRef = useRef(0);
 
     useEffect(() => {
-        // Ensure video metadata is loaded so we have duration
-        if (videoRef.current) {
-            videoRef.current.load();
-        }
+        const video = videoRef.current;
+        if (!video) return;
+
+        let maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+
+        const updateMaxScroll = () => {
+            maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        };
+
+        const handleScroll = () => {
+            const scrollFraction = window.scrollY / maxScroll;
+            if (video.duration) {
+                // Clamp fraction between 0 and 1
+                const fraction = Math.max(0, Math.min(1, scrollFraction));
+                targetTimeRef.current = fraction * video.duration;
+            }
+        };
+
+        const tick = () => {
+            if (video && !isNaN(video.duration) && video.duration > 0) {
+                const diff = targetTimeRef.current - video.currentTime;
+
+                // Only update if needed (reduces seeks)
+                if (Math.abs(diff) > 0.02) {
+                    video.currentTime += diff * 0.25; // 0.25 = easing (smooth)
+                }
+            }
+            requestRef.current = requestAnimationFrame(tick);
+        };
+
+        // Initialize
+        updateMaxScroll();
+
+        // Event Listeners
+        window.addEventListener("resize", updateMaxScroll);
+        window.addEventListener("scroll", handleScroll);
+
+        // Start loop
+        requestRef.current = requestAnimationFrame(tick);
+
+        return () => {
+            window.removeEventListener("resize", updateMaxScroll);
+            window.removeEventListener("scroll", handleScroll);
+            if (requestRef.current) {
+                cancelAnimationFrame(requestRef.current);
+            }
+        };
     }, []);
 
     return (
@@ -47,8 +69,6 @@ export function ScrollVideoBackground() {
                 <source src="/hero-video.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
             </video>
-            {/* Optional overlay if needed for text readability, though user asked to remove "black over shard" */}
-            {/* <div className="absolute inset-0 bg-black/20" /> */}
         </div>
     );
 }
