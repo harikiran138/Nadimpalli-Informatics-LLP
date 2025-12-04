@@ -25,7 +25,7 @@ export function Hero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-400/30 bg-slate-900/50 backdrop-blur-md mb-6"
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-400/30 backdrop-blur-md mb-6"
                     >
                         <span className="w-2 h-2 rounded-full bg-slate-400 animate-pulse" />
                         <span className="text-xs font-medium text-slate-300 tracking-wider uppercase">Next Gen Education Tech</span>
@@ -51,7 +51,7 @@ export function Hero() {
                             Get a Demo
                             <ChevronRight className="ml-2 h-5 w-5" />
                         </Button>
-                        <Button size="lg" variant="outline" className="h-14 px-8 rounded-full border-slate-600 bg-slate-900/50 hover:bg-slate-900/70 text-slate-300 text-lg backdrop-blur-md">
+                        <Button size="lg" variant="outline" className="h-14 px-8 rounded-full border-slate-600 hover:bg-slate-900/70 text-slate-300 text-lg backdrop-blur-md">
                             Our Solutions
                         </Button>
                     </div>

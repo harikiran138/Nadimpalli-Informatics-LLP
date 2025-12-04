@@ -32,7 +32,7 @@ export function Contact() {
                     <h2 className="text-4xl md:text-6xl font-bold mb-6 text-white tracking-tight">
                         Start Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">Transformation</span>
                     </h2>
-                    <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+                    <p className="text-slate-200 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
                         Ready to upgrade your campus with intelligent solutions? Our engineering team is here to help you build the future.
                     </p>
                 </motion.div>
@@ -44,7 +44,7 @@ export function Contact() {
                     className="relative"
                 >
                     {/* Glass Card */}
-                    <div className="relative rounded-[2.5rem] bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-12 overflow-hidden">
+                    <div className="relative rounded-[2.5rem] bg-black/40 backdrop-blur-3xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-12 overflow-hidden">
 
                         {/* Decorative Gradient Border Effect */}
                         <div className="absolute inset-0 border border-white/10 rounded-[2.5rem] pointer-events-none" />

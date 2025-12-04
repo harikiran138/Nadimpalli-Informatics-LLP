@@ -55,7 +55,7 @@ export function Services() {
                         >
                             Intelligent <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">Solutions</span>
                         </motion.h2>
-                        <p className="text-slate-400 text-lg">
+                        <p className="text-slate-200 text-lg">
                             Modular components designed to integrate seamlessly into your existing infrastructure.
                         </p>
                     </div>
@@ -77,7 +77,7 @@ export function Services() {
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.1 }}
                             whileHover={{ y: -5 }}
-                            className={`group relative h-64 rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-md overflow-hidden transition-all duration-300 ${service.shadow} hover:border-white/20`}
+                            className={`group relative h-64 rounded-[2rem] bg-black/40 border border-white/10 backdrop-blur-3xl overflow-hidden transition-all duration-300 ${service.shadow} hover:border-white/20`}
                         >
                             <div className="absolute inset-0 p-8 flex flex-col justify-between">
                                 <div className="flex justify-between items-start">
@@ -93,7 +93,7 @@ export function Services() {
                                     <h3 className="text-2xl font-bold text-white mb-2 group-hover:translate-x-2 transition-transform duration-300">
                                         {service.title}
                                     </h3>
-                                    <p className="text-slate-400 group-hover:text-slate-200 transition-colors">
+                                    <p className="text-slate-200 text-sm leading-relaxed group-hover:text-white transition-colors duration-300">
                                         {service.description}
                                     </p>
                                 </div>

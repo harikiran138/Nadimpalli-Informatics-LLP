@@ -64,16 +64,16 @@ export function About() {
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.1 }}
                             whileHover={{ y: -10 }}
-                            className={`group relative h-80 p-8 rounded-[2rem] bg-white/15 border border-white/20 backdrop-blur-3xl hover:border-white/30 transition-all duration-500 flex flex-col justify-between overflow-hidden ${feature.shadow}`}
+                            className={`group relative h-80 p-8 rounded-[2rem] bg-black/40 border border-white/10 backdrop-blur-3xl hover:border-white/20 transition-all duration-500 flex flex-col justify-between overflow-hidden ${feature.shadow}`}
                         >
                             {/* Hover Accent Background */}
-                            <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500 ${feature.color.replace('bg-', 'bg-')}`} />
+                            <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 ${feature.color.replace('bg-', 'bg-')}`} />
 
                             {/* Top Accent Line */}
                             <div className={`absolute top-0 left-0 w-full h-1 ${feature.color} transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500`} />
 
                             <div className="relative z-10">
-                                <span className={`text-6xl font-bold opacity-10 group-hover:opacity-20 transition-opacity duration-500 text-white`}>
+                                <span className={`text-6xl font-bold opacity-20 group-hover:opacity-30 transition-opacity duration-500 text-white`}>
                                     {feature.id}
                                 </span>
                             </div>
@@ -83,7 +83,7 @@ export function About() {
                                     {feature.title}
                                 </h3>
 
-                                <p className="text-slate-400 font-medium leading-relaxed group-hover:text-slate-200 transition-colors duration-300">
+                                <p className="text-slate-200 font-medium leading-relaxed group-hover:text-white transition-colors duration-300">
                                     {feature.description}
                                 </p>
                             </div>
