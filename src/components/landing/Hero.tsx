@@ -22,6 +22,9 @@ export function Hero() {
 
             </div>
 
+            {/* Gradient Overlay for Blending */}
+            <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent z-10" />
+
             <div className="container mx-auto px-4 z-10 flex flex-col items-start justify-center text-left">
                 {/* Text Content */}
                 <motion.div
