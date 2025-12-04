@@ -1,38 +1,74 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef, useEffect } from "react";
 
 export function ScrollVideoBackground() {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const { scrollYProgress } = useScroll({
-        target: containerRef,
-        offset: ["start start", "end start"]
-    });
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const requestRef = useRef<number | undefined>(undefined);
+    const targetTimeRef = useRef(0);
 
-    // Parallax effect: Move the video slower than the scroll
-    const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
-    const opacity = useTransform(scrollYProgress, [0, 0.8, 1], [1, 0.8, 0]);
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        let maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+
+        const updateMaxScroll = () => {
+            maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        };
+
+        const handleScroll = () => {
+            const scrollFraction = window.scrollY / maxScroll;
+            if (video.duration) {
+                // Clamp fraction between 0 and 1
+                const fraction = Math.max(0, Math.min(1, scrollFraction));
+                targetTimeRef.current = fraction * video.duration;
+            }
+        };
+
+        const tick = () => {
+            if (video && !isNaN(video.duration) && video.duration > 0) {
+                const diff = targetTimeRef.current - video.currentTime;
+
+                // Only update if needed (reduces seeks)
+                if (Math.abs(diff) > 0.02) {
+                    video.currentTime += diff * 0.25; // 0.25 = easing (smooth)
+                }
+            }
+            requestRef.current = requestAnimationFrame(tick);
+        };
+
+        // Initialize
+        updateMaxScroll();
+
+        // Event Listeners
+        window.addEventListener("resize", updateMaxScroll);
+        window.addEventListener("scroll", handleScroll);
+
+        // Start loop
+        requestRef.current = requestAnimationFrame(tick);
+
+        return () => {
+            window.removeEventListener("resize", updateMaxScroll);
+            window.removeEventListener("scroll", handleScroll);
+            if (requestRef.current) {
+                cancelAnimationFrame(requestRef.current);
+            }
+        };
+    }, []);
 
     return (
-        <div ref={containerRef} className="fixed inset-0 z-[-1] overflow-hidden bg-black h-[150vh]">
-            <motion.div
-                style={{ y, opacity }}
-                className="absolute inset-0 w-full h-full"
+        <div className="fixed inset-0 z-[-1] overflow-hidden bg-black">
+            <video
+                ref={videoRef}
+                muted
+                playsInline
+                preload="auto"
+                className="absolute inset-0 w-full h-full object-cover"
             >
-                <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover"
-                >
-                    <source src="/hero-video.mp4" type="video/mp4" />
-                    Your browser does not support the video tag.
-                </video>
-                {/* Subtle overlay for better text contrast */}
-                <div className="absolute inset-0 bg-black/30" />
-            </motion.div>
+                <source src="/hero-video.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+            </video>
         </div>
     );
 }
