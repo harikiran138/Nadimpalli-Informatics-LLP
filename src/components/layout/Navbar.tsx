@@ -1,7 +1,9 @@
 "use client";
 
-import { Home, User, Briefcase, Phone, FileText } from 'lucide-react'
-import { NavBar } from "@/components/ui/tubelight-navbar"
+import Link from "next/link";
+import { Home, User, Briefcase, Phone } from 'lucide-react';
+import { NavBar } from "@/components/ui/tubelight-navbar";
+import { Button } from "@/components/ui/button";
 
 export function Navbar() {
     const navItems = [
@@ -23,15 +25,16 @@ export function Navbar() {
                 </div>
             </div>
 
-            <NavBar items={navItems}>
-                {/* Additional items not part of the main navItems array, placed at the end of the navbar */}
+            {/* Login Button - Fixed top right */}
+            <div className="fixed top-6 right-6 z-50 hidden md:block">
                 <Link href="/login">
-                    <Button variant="ghost" className="text-muted-foreground hover:text-white hover:bg-white/10">
+                    <Button variant="ghost" className="text-muted-foreground hover:text-white hover:bg-white/10 backdrop-blur-md border border-white/5">
                         Login
                     </Button>
                 </Link>
-            </NavBar>
+            </div>
+
+            <NavBar items={navItems} />
         </>
     );
 }
-```
