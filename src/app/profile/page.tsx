@@ -23,6 +23,8 @@ interface UserProfile {
 
 export default function ProfilePage() {
     const router = useRouter();
+    const [loading, setLoading] = useState(true);
+    const [profile, setProfile] = useState<UserProfile | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState<UserProfile | null>(null);
     const [saving, setSaving] = useState(false);
