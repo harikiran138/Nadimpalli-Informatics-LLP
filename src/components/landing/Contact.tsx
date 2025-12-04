@@ -13,7 +13,7 @@ export function Contact() {
                     initial={{ opacity: 0, scale: 0.95 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    className="relative rounded-[3rem] bg-black/40 border border-white/10 backdrop-blur-xl p-8 md:p-16 overflow-hidden"
+                    className="relative rounded-[3rem] bg-white/5 border border-white/10 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] p-8 md:p-16 overflow-hidden"
                 >
                     {/* Neon Glow Borders */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent shadow-[0_0_20px_rgba(20,123,255,0.5)]" />

@@ -69,7 +69,7 @@ export function Services() {
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.1 }}
                             whileHover={{ y: -5 }}
-                            className="group relative h-64 rounded-[2rem] bg-black/40 border border-white/10 backdrop-blur-xl overflow-hidden"
+                            className="group relative h-64 rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] overflow-hidden"
                         >
                             {/* Hover Gradient Background */}
                             <div className={`absolute inset-0 bg-gradient-to-br ${service.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
