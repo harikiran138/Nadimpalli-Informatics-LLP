@@ -45,51 +45,51 @@
 
 :root {
   --radius: 0.625rem;
-  /* Deep Cyber Black Background */
-  --background: #0B0F18;
-  --foreground: #FFFFFF;
+  /* White Theme Background */
+  --background: #FFFFFF;
+  --foreground: #0F172A;
 
-  --card: rgba(255, 255, 255, 0.03);
-  --card-foreground: #FFFFFF;
+  --card: rgba(255, 255, 255, 0.8);
+  --card-foreground: #0F172A;
 
-  --popover: #0B0F18;
-  --popover-foreground: #FFFFFF;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
 
-  /* Electric Blue Glow */
+  /* Electric Blue Glow - Kept for accent */
   --primary: #147BFF;
   --primary-foreground: #FFFFFF;
 
-  /* Chrome Silver / Glass Frost */
-  --secondary: rgba(255, 255, 255, 0.1);
-  --secondary-foreground: #FFFFFF;
+  /* Light Silver / Glass Frost */
+  --secondary: #F1F5F9;
+  --secondary-foreground: #0F172A;
 
-  --muted: rgba(255, 255, 255, 0.05);
-  --muted-foreground: #BDC2CB;
+  --muted: #F8FAFC;
+  --muted-foreground: #64748B;
 
-  /* Neon Cyan Accent */
-  --accent: rgba(62, 255, 250, 0.1);
-  --accent-foreground: #3EFFFA;
+  /* Neon Cyan Accent - Adjusted for light theme */
+  --accent: rgba(62, 255, 250, 0.2);
+  --accent-foreground: #0891B2;
 
-  --destructive: #FF4444;
+  --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
 
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.1);
+  --border: #E2E8F0;
+  --input: #E2E8F0;
   --ring: #147BFF;
 
   --chart-1: #147BFF;
   --chart-2: #3EFFFA;
-  --chart-3: #BDC2CB;
-  --chart-4: #0B0F18;
+  --chart-3: #94A3B8;
+  --chart-4: #0F172A;
   --chart-5: #FFFFFF;
 
-  --sidebar: #0B0F18;
-  --sidebar-foreground: #FFFFFF;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0F172A;
   --sidebar-primary: #147BFF;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: rgba(255, 255, 255, 0.05);
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-accent: #F1F5F9;
+  --sidebar-accent-foreground: #0F172A;
+  --sidebar-border: #E2E8F0;
   --sidebar-ring: #147BFF;
 }
 

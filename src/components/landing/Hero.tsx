@@ -19,7 +19,7 @@ export function Hero() {
                 >
                     <source src="/hero-video.mp4" type="video/mp4" />
                 </video>
-                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/90" />
+
             </div>
 
             <div className="container mx-auto px-4 z-10 flex flex-col items-start justify-center text-left">
