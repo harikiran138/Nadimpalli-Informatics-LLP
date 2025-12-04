@@ -53,8 +53,8 @@ export function Hero() {
                     </motion.div>
 
                     <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight">
-                        <span className="text-slate-300">Engineering the</span> <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-200 via-slate-400 to-slate-500">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-800 via-gray-500 to-black">Engineering the</span> <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-800 via-gray-500 to-black">
                             Future of Digital
                         </span>
                         <br />
