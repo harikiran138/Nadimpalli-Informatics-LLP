@@ -1,0 +1,41 @@
+const { createClient } = require('@supabase/supabase-js');
+const fs = require('fs');
+const path = require('path');
+
+const envPath = path.resolve(__dirname, '../.env.local');
+const envConfig = fs.readFileSync(envPath, 'utf8');
+const env = {};
+envConfig.split('\n').forEach(line => {
+    const [key, value] = line.split('=');
+    if (key && value) {
+        env[key.trim()] = value.trim().replace(/"/g, '');
+    }
+});
+
+const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+    console.error('Missing Supabase URL or Key');
+    process.exit(1);
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+async function checkSchema() {
+    console.log('Checking schema for teacher_profiles...');
+
+    const { data, error } = await supabase
+        .from('teacher_profiles')
+        .select('bio')
+        .limit(1);
+
+    if (error) {
+        console.error('Error selecting bio:', error);
+        // If error is "Could not find the 'bio' column...", then we know it's missing.
+    } else {
+        console.log('Successfully selected bio column. Data:', data);
+    }
+}
+
+checkSchema();

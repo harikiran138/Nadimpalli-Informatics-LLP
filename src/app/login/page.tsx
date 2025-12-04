@@ -46,7 +46,7 @@ export default function LoginPage() {
                 .from('admins')
                 .select('*')
                 .eq('employee_id', employee.employee_id)
-                .single();
+                .maybeSingle();
 
             if (admin) {
                 router.push("/admin");
@@ -58,7 +58,7 @@ export default function LoginPage() {
                 .from('teacher_profiles')
                 .select('*')
                 .eq('employee_id', employee.employee_id)
-                .single();
+                .maybeSingle();
 
             if (profile) {
                 router.push("/profile");
