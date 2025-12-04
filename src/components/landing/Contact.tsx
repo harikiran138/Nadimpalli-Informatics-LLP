@@ -10,10 +10,9 @@ export function Contact() {
     return (
         <section id="contact" className="py-32 relative overflow-hidden">
             {/* Background Elements */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-1/4 left-0 w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[100px] -translate-x-1/2" />
-                <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-100/40 rounded-full blur-[100px] translate-x-1/4" />
-            </div>
+            <div className="absolute inset-0 bg-[#0B0F18]" />
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[100px] pointer-events-none" />
 
             <div className="container mx-auto px-4 max-w-5xl relative z-10">
                 <motion.div
@@ -26,16 +25,16 @@ export function Contact() {
                         initial={{ opacity: 0, scale: 0.9 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.2 }}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-sm font-medium mb-6"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6"
                     >
                         <Sparkles className="w-4 h-4" />
                         <span>Get in Touch</span>
                     </motion.div>
 
-                    <h2 className="text-4xl md:text-6xl font-bold mb-6 text-slate-900 tracking-tight">
-                        Start Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Transformation</span>
+                    <h2 className="text-4xl md:text-6xl font-bold mb-6 text-white tracking-tight">
+                        Start Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">Transformation</span>
                     </h2>
-                    <p className="text-slate-600 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+                    <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
                         Ready to upgrade your campus with intelligent solutions? Our engineering team is here to help you build the future.
                     </p>
                 </motion.div>
@@ -47,35 +46,35 @@ export function Contact() {
                     className="relative"
                 >
                     {/* Glass Card */}
-                    <div className="relative rounded-[2.5rem] bg-white/60 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-12 overflow-hidden">
+                    <div className="relative rounded-[2.5rem] bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-12 overflow-hidden">
 
                         {/* Decorative Gradient Border Effect */}
-                        <div className="absolute inset-0 border border-white/50 rounded-[2.5rem] pointer-events-none" />
+                        <div className="absolute inset-0 border border-white/10 rounded-[2.5rem] pointer-events-none" />
                         <div className="absolute -inset-[1px] bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-blue-500/10 rounded-[2.5rem] -z-10 blur-sm" />
 
                         <form className="space-y-8 relative z-10">
                             <div className="grid md:grid-cols-2 gap-8">
                                 <div className="space-y-3">
-                                    <label className="text-sm font-semibold text-slate-700 ml-1">Full Name</label>
+                                    <label className="text-sm font-semibold text-slate-300 ml-1">Full Name</label>
                                     <Input
                                         placeholder="John Doe"
-                                        className="h-14 rounded-2xl bg-white/50 border-slate-200/60 focus:bg-white focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 text-slate-900 placeholder:text-slate-400 px-6 shadow-sm"
+                                        className="h-14 rounded-2xl bg-white/5 border-white/10 focus:bg-white/10 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 text-white placeholder:text-slate-500 px-6 shadow-sm"
                                     />
                                 </div>
                                 <div className="space-y-3">
-                                    <label className="text-sm font-semibold text-slate-700 ml-1">Email Address</label>
+                                    <label className="text-sm font-semibold text-slate-300 ml-1">Email Address</label>
                                     <Input
                                         placeholder="john@example.com"
-                                        className="h-14 rounded-2xl bg-white/50 border-slate-200/60 focus:bg-white focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 text-slate-900 placeholder:text-slate-400 px-6 shadow-sm"
+                                        className="h-14 rounded-2xl bg-white/5 border-white/10 focus:bg-white/10 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 text-white placeholder:text-slate-500 px-6 shadow-sm"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-3">
-                                <label className="text-sm font-semibold text-slate-700 ml-1">Your Message</label>
+                                <label className="text-sm font-semibold text-slate-300 ml-1">Your Message</label>
                                 <Textarea
                                     placeholder="Tell us about your requirements..."
-                                    className="min-h-[180px] rounded-3xl bg-white/50 border-slate-200/60 focus:bg-white focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 text-slate-900 placeholder:text-slate-400 p-6 resize-none shadow-sm"
+                                    className="min-h-[180px] rounded-3xl bg-white/5 border-white/10 focus:bg-white/10 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 text-white placeholder:text-slate-500 p-6 resize-none shadow-sm"
                                 />
                             </div>
 

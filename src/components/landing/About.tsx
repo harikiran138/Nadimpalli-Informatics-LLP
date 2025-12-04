@@ -35,12 +35,20 @@ const features = [
 
 export function About() {
     return (
-        <section id="about" className="py-32 relative overflow-hidden bg-[#0B0F18]">
+        <section id="about" className="pb-32 pt-0 relative overflow-hidden">
             {/* Background Elements */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[100px] translate-x-1/4 -translate-y-1/4" />
-                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[100px] -translate-x-1/4 translate-y-1/4" />
+            <div className="absolute inset-0">
+                <video
+                    muted
+                    playsInline
+                    onLoadedMetadata={(e) => e.currentTarget.currentTime = 1}
+                    className="w-full h-full object-cover scale-x-[-1]"
+                >
+                    <source src="/hero-video.mp4" type="video/mp4" />
+                </video>
             </div>
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[100px] pointer-events-none" />
 
             <div className="container mx-auto px-4 relative z-10">
                 <div className="text-center mb-24">

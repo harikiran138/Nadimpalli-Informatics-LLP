@@ -7,7 +7,7 @@ import { ArrowRight, ChevronRight } from "lucide-react";
 export function Hero() {
 
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
             {/* Background Video */}
             <div className="absolute inset-0 z-0">
                 <video
@@ -23,7 +23,7 @@ export function Hero() {
             </div>
 
             {/* Gradient Overlay for Blending */}
-            <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent z-10" />
+
 
             <div className="container mx-auto px-4 z-10 flex flex-col items-start justify-center text-left">
                 {/* Text Content */}
