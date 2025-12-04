@@ -9,7 +9,7 @@ export function ScrollVideoBackground() {
 
     // Smooth out the scroll progress to prevent jittery playback
     const smoothProgress = useSpring(scrollYProgress, {
-        stiffness: 100,
+        stiffness: 300,
         damping: 30,
         restDelta: 0.001
     });
@@ -22,7 +22,7 @@ export function ScrollVideoBackground() {
 
             // Check if the time difference is significant enough to update
             // This helps performance by avoiding micro-updates
-            if (Math.abs(videoRef.current.currentTime - targetTime) > 0.05) {
+            if (Math.abs(videoRef.current.currentTime - targetTime) > 0.01) {
                 videoRef.current.currentTime = targetTime;
             }
         }
