@@ -1,7 +1,10 @@
+"use client";
+
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import dynamic from 'next/dynamic';
 import { Hero } from "@/components/landing/Hero";
+import { useEffect, useRef } from "react";
 
 const About = dynamic(() => import('@/components/landing/About').then(mod => mod.About));
 const Services = dynamic(() => import('@/components/landing/Services').then(mod => mod.Services));
@@ -9,6 +12,14 @@ const Contact = dynamic(() => import('@/components/landing/Contact').then(mod =>
 
 
 export default function Home() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = 0.75;
+    }
+  }, []);
+
   return (
     <div className="min-h-screen text-foreground selection:bg-primary/30 selection:text-white overflow-x-hidden">
       <Navbar />
@@ -17,6 +28,7 @@ export default function Home() {
         {/* Global Fixed Background Video */}
         <div className="fixed inset-0 z-0">
           <video
+            ref={videoRef}
             autoPlay
             loop
             muted

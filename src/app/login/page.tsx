@@ -48,7 +48,7 @@ export default function LoginPage() {
                 .single();
 
             if (profile) {
-                router.push("/admin");
+                router.push("/profile");
             } else {
                 router.push("/onboarding");
             }

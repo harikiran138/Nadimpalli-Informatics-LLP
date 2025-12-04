@@ -25,7 +25,9 @@ ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
 
 -- Allow read access to everyone for demo purposes (Adjust for production)
 CREATE POLICY "Allow public read access" ON public.employees FOR SELECT USING (true);
+CREATE POLICY "Allow public insert" ON public.employees FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow public read access" ON public.admins FOR SELECT USING (true);
+CREATE POLICY "Allow public insert" ON public.admins FOR INSERT WITH CHECK (true);
 
 -- Create Teacher Profiles Table
 CREATE TABLE IF NOT EXISTS public.teacher_profiles (

@@ -53,7 +53,7 @@ export default function OnboardingPage() {
 
             if (insertError) throw insertError;
 
-            router.push("/admin");
+            router.push("/profile");
         } catch (err: any) {
             console.error("Onboarding error:", err);
             // Ideally show error to user, but for now just log

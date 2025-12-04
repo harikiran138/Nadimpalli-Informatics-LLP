@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ChevronRight, Sparkles } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const TypingText = ({ text, className }: { text: string, className?: string }) => {
@@ -40,15 +40,7 @@ export function Hero() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 1.2, ease: "easeOut" }}
                     >
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.5, duration: 1 }}
-                            className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-400/30 backdrop-blur-md mb-6"
-                        >
-                            <Sparkles className="w-3 h-3 text-slate-300" />
-                            <span className="text-xs font-medium text-slate-300 tracking-wider uppercase">Next Gen Education Tech</span>
-                        </motion.div>
+
 
                         <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight min-h-[160px] md:min-h-[240px]">
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-800 via-gray-500 to-black">

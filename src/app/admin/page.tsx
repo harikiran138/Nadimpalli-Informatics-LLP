@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 
+import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
+
+const supabase = createClient();
+
 const stats = [
     {
         title: "Total Employees",
@@ -37,6 +42,53 @@ const stats = [
 ];
 
 export default function AdminDashboard() {
+    const [loading, setLoading] = useState(false);
+    const [newEmployee, setNewEmployee] = useState({
+        fullName: "",
+        employeeId: "",
+        password: "",
+        isAdmin: false
+    });
+
+    const handleCreateEmployee = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            // 1. Create Employee
+            const { error: empError } = await supabase
+                .from('employees')
+                .insert([{
+                    full_name: newEmployee.fullName,
+                    employee_id: newEmployee.employeeId,
+                    password_hash: newEmployee.password
+                }]);
+
+            if (empError) throw empError;
+
+            // 2. Grant Admin Access if checked
+            if (newEmployee.isAdmin) {
+                const { error: adminError } = await supabase
+                    .from('admins')
+                    .insert([{
+                        employee_id: newEmployee.employeeId
+                    }]);
+
+                if (adminError) throw adminError;
+            }
+
+            // Reset form
+            setNewEmployee({ fullName: "", employeeId: "", password: "", isAdmin: false });
+            alert("Employee created successfully!");
+
+        } catch (error: any) {
+            console.error("Error creating employee:", error);
+            alert("Failed to create employee: " + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="flex h-screen overflow-hidden">
             {/* Glass Sidebar */}
@@ -92,6 +144,83 @@ export default function AdminDashboard() {
                 </header>
 
                 <div className="p-8 space-y-8">
+                    {/* Create Employee Section */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl overflow-hidden"
+                    >
+                        <div className="p-6 border-b border-white/10">
+                            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                                <Users className="w-5 h-5 text-blue-400" />
+                                Create New Employee
+                            </h2>
+                        </div>
+                        <div className="p-6">
+                            <form onSubmit={handleCreateEmployee} className="space-y-4">
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-slate-400">Full Name</label>
+                                        <Input
+                                            required
+                                            placeholder="e.g. Alice Smith"
+                                            value={newEmployee.fullName}
+                                            onChange={(e) => setNewEmployee({ ...newEmployee, fullName: e.target.value })}
+                                            className="bg-black/20 border-white/10 text-white placeholder:text-slate-600 focus:bg-black/40"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-slate-400">Employee ID</label>
+                                        <Input
+                                            required
+                                            placeholder="e.g. EMP001"
+                                            value={newEmployee.employeeId}
+                                            onChange={(e) => setNewEmployee({ ...newEmployee, employeeId: e.target.value })}
+                                            className="bg-black/20 border-white/10 text-white placeholder:text-slate-600 focus:bg-black/40"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-slate-400">Password</label>
+                                        <Input
+                                            required
+                                            type="password"
+                                            placeholder="••••••••"
+                                            value={newEmployee.password}
+                                            onChange={(e) => setNewEmployee({ ...newEmployee, password: e.target.value })}
+                                            className="bg-black/20 border-white/10 text-white placeholder:text-slate-600 focus:bg-black/40"
+                                        />
+                                    </div>
+                                    <div className="flex items-end pb-2">
+                                        <label className="flex items-center gap-3 cursor-pointer group">
+                                            <div className="relative">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={newEmployee.isAdmin}
+                                                    onChange={(e) => setNewEmployee({ ...newEmployee, isAdmin: e.target.checked })}
+                                                    className="peer sr-only"
+                                                />
+                                                <div className="w-10 h-6 bg-slate-700 rounded-full peer-checked:bg-blue-500 transition-colors"></div>
+                                                <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+                                            </div>
+                                            <span className="text-slate-300 font-medium group-hover:text-white transition-colors">Grant Admin Access</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="pt-2">
+                                    <Button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="bg-blue-600 hover:bg-blue-500 text-white font-bold"
+                                    >
+                                        {loading ? "Creating..." : "Create Employee"}
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
+                    </motion.div>
+
                     {/* Stats Grid */}
                     <div className="grid md:grid-cols-3 gap-6">
                         {stats.map((stat, index) => (
