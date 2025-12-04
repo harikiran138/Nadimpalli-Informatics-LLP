@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Lock, User, Loader2, ArrowLeft, BadgeCheck } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient();
 
 export default function SignupPage() {
     const [formData, setFormData] = useState({
@@ -30,11 +33,28 @@ export default function SignupPage() {
             return;
         }
 
-        // Mock signup for build/demo purposes
-        setTimeout(() => {
-            setLoading(false);
+        try {
+            // Insert into employees table
+            const { error: insertError } = await supabase
+                .from('employees')
+                .insert([
+                    {
+                        full_name: formData.fullName,
+                        employee_id: formData.employeeId,
+                        password_hash: formData.password // Note: In production, use proper hashing!
+                    }
+                ]);
+
+            if (insertError) throw insertError;
+
+            // Success
             router.push("/login");
-        }, 1500);
+        } catch (err: any) {
+            console.error("Signup error:", err);
+            setError(err.message || "Failed to create account");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -80,10 +100,10 @@ export default function SignupPage() {
                     <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Link>
 
-                {/* Glass Card */}
-                <div className="mt-12 rounded-[2rem] bg-white/30 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] p-10 overflow-hidden relative">
+                {/* Enhanced Glass Card */}
+                <div className="mt-12 rounded-[2rem] bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] p-10 overflow-hidden relative">
                     {/* Inner shine/reflection */}
-                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/40 to-transparent pointer-events-none" />
+                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
 
                     <div className="text-center mb-8 relative z-10">
                         <h1 className="text-3xl font-bold text-black mb-2 tracking-tight">Create Account</h1>
@@ -101,7 +121,7 @@ export default function SignupPage() {
                                     value={formData.fullName}
                                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                                     required
-                                    className="h-12 pl-12 rounded-xl bg-white/50 border-white/50 focus:bg-white/80 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium"
+                                    className="h-12 pl-12 rounded-xl bg-white/20 border-white/30 focus:bg-white/40 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium backdrop-blur-sm"
                                 />
                             </div>
                         </div>
@@ -116,7 +136,7 @@ export default function SignupPage() {
                                     value={formData.employeeId}
                                     onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
                                     required
-                                    className="h-12 pl-12 rounded-xl bg-white/50 border-white/50 focus:bg-white/80 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium"
+                                    className="h-12 pl-12 rounded-xl bg-white/20 border-white/30 focus:bg-white/40 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium backdrop-blur-sm"
                                 />
                             </div>
                         </div>
@@ -131,7 +151,7 @@ export default function SignupPage() {
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     required
-                                    className="h-12 pl-12 rounded-xl bg-white/50 border-white/50 focus:bg-white/80 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium"
+                                    className="h-12 pl-12 rounded-xl bg-white/20 border-white/30 focus:bg-white/40 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium backdrop-blur-sm"
                                 />
                             </div>
                         </div>
@@ -146,7 +166,7 @@ export default function SignupPage() {
                                     value={formData.confirmPassword}
                                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                                     required
-                                    className="h-12 pl-12 rounded-xl bg-white/50 border-white/50 focus:bg-white/80 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium"
+                                    className="h-12 pl-12 rounded-xl bg-white/20 border-white/30 focus:bg-white/40 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium backdrop-blur-sm"
                                 />
                             </div>
                         </div>

@@ -1,9 +1,11 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import dynamic from 'next/dynamic';
 import { Hero } from "@/components/landing/Hero";
-import { About } from "@/components/landing/About";
-import { Services } from "@/components/landing/Services";
-import { Contact } from "@/components/landing/Contact";
+
+const About = dynamic(() => import('@/components/landing/About').then(mod => mod.About));
+const Services = dynamic(() => import('@/components/landing/Services').then(mod => mod.Services));
+const Contact = dynamic(() => import('@/components/landing/Contact').then(mod => mod.Contact));
 
 
 export default function Home() {

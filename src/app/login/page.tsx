@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Lock, User, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient();
 
 export default function LoginPage() {
     const [employeeId, setEmployeeId] = useState("");
@@ -20,17 +23,42 @@ export default function LoginPage() {
         setLoading(true);
         setError(null);
 
-        // Mock login for build/demo purposes
-        setTimeout(() => {
-            setLoading(false);
-            // Simple mock validation
-            if (employeeId && password) {
-                router.push("/admin");
-                router.refresh();
-            } else {
-                setError("Invalid credentials");
+        try {
+            // 1. Verify Credentials
+            const { data: employee, error: loginError } = await supabase
+                .from('employees')
+                .select('*')
+                .eq('employee_id', employeeId)
+                .eq('password_hash', password) // Note: In production, verify hash
+                .single();
+
+            if (loginError || !employee) {
+                throw new Error("Invalid credentials");
             }
-        }, 1000);
+
+            // 2. Store session info (Mock session)
+            localStorage.setItem("user_id", employee.employee_id);
+            localStorage.setItem("user_name", employee.full_name);
+
+            // 3. Check for Profile
+            const { data: profile } = await supabase
+                .from('teacher_profiles')
+                .select('*')
+                .eq('employee_id', employee.employee_id)
+                .single();
+
+            if (profile) {
+                router.push("/admin");
+            } else {
+                router.push("/onboarding");
+            }
+
+        } catch (err: any) {
+            console.error("Login error:", err);
+            setError(err.message || "Login failed");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -76,10 +104,10 @@ export default function LoginPage() {
                     <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Link>
 
-                {/* Glass Card */}
-                <div className="mt-12 rounded-[2rem] bg-white/30 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] p-10 overflow-hidden relative">
+                {/* Enhanced Glass Card */}
+                <div className="mt-12 rounded-[2rem] bg-gradient-to-br from-white/40 to-white/10 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] p-10 overflow-hidden relative">
                     {/* Inner shine/reflection */}
-                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/40 to-transparent pointer-events-none" />
+                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
 
                     <div className="text-center mb-8 relative z-10">
                         <h1 className="text-3xl font-bold text-black mb-2 tracking-tight">Welcome Back</h1>
@@ -97,7 +125,7 @@ export default function LoginPage() {
                                     value={employeeId}
                                     onChange={(e) => setEmployeeId(e.target.value)}
                                     required
-                                    className="h-12 pl-12 rounded-xl bg-white/50 border-white/50 focus:bg-white/80 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium"
+                                    className="h-12 pl-12 rounded-xl bg-white/20 border-white/30 focus:bg-white/40 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium backdrop-blur-sm"
                                 />
                             </div>
                         </div>
@@ -112,7 +140,7 @@ export default function LoginPage() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
-                                    className="h-12 pl-12 rounded-xl bg-white/50 border-white/50 focus:bg-white/80 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium"
+                                    className="h-12 pl-12 rounded-xl bg-white/20 border-white/30 focus:bg-white/40 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium backdrop-blur-sm"
                                 />
                             </div>
                         </div>
