@@ -35,7 +35,6 @@ export function Hero() {
                     <source src="/hero-video.mp4" type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
-                <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/50 to-background" />
             </div>
 
             <div className="container mx-auto px-4 z-10 grid lg:grid-cols-2 gap-12 items-center">
@@ -50,33 +49,33 @@ export function Hero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-6"
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-400/30 bg-slate-900/50 backdrop-blur-md mb-6"
                     >
-                        <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                        <span className="text-xs font-medium text-accent tracking-wider uppercase">Next Gen Education Tech</span>
+                        <span className="w-2 h-2 rounded-full bg-slate-400 animate-pulse" />
+                        <span className="text-xs font-medium text-slate-300 tracking-wider uppercase">Next Gen Education Tech</span>
                     </motion.div>
 
                     <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight">
-                        Engineering the <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/50">
+                        <span className="text-slate-300">Engineering the</span> <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-200 via-slate-400 to-slate-500">
                             Future of Digital
                         </span>
                         <br />
-                        <span className="text-primary drop-shadow-[0_0_30px_rgba(20,123,255,0.5)]">
+                        <span className="text-black drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
                             Education.
                         </span>
                     </h1>
 
-                    <p className="text-xl text-muted-foreground max-w-lg mb-8 leading-relaxed">
+                    <p className="text-xl text-slate-300 max-w-lg mb-8 leading-relaxed">
                         Seamless technology for the smartest campuses. Precision-built modules for the modern educational ecosystem.
                     </p>
 
                     <div className="flex flex-wrap gap-4">
-                        <Button size="lg" className="h-14 px-8 rounded-full bg-primary hover:bg-primary/90 text-white text-lg shadow-[0_0_20px_rgba(20,123,255,0.3)] border border-white/10">
+                        <Button size="lg" className="h-14 px-8 rounded-full bg-black hover:bg-black/80 text-slate-200 text-lg shadow-[0_0_20px_rgba(0,0,0,0.3)] border border-slate-700">
                             Get a Demo
                             <ChevronRight className="ml-2 h-5 w-5" />
                         </Button>
-                        <Button size="lg" variant="outline" className="h-14 px-8 rounded-full border-white/10 bg-white/5 hover:bg-white/10 text-white text-lg backdrop-blur-md">
+                        <Button size="lg" variant="outline" className="h-14 px-8 rounded-full border-slate-600 bg-slate-900/50 hover:bg-slate-900/70 text-slate-300 text-lg backdrop-blur-md">
                             Our Solutions
                         </Button>
                     </div>
@@ -114,32 +113,7 @@ export function Hero() {
                             </div>
                         </motion.div>
 
-                        {/* Floating Elements */}
-                        <motion.div
-                            style={{ y: y1 }}
-                            className="absolute -top-10 -right-10 p-4 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-xl shadow-xl"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
-                                <span className="text-sm font-mono text-white/80">System Active</span>
-                            </div>
-                        </motion.div>
-
-                        <motion.div
-                            style={{ y: y2 }}
-                            className="absolute -bottom-5 -left-10 p-4 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-xl shadow-xl"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-1 bg-primary/50 rounded-full overflow-hidden">
-                                    <motion.div
-                                        animate={{ x: ["-100%", "100%"] }}
-                                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                                        className="w-1/2 h-full bg-primary"
-                                    />
-                                </div>
-                                <span className="text-sm font-mono text-white/80">Processing...</span>
-                            </div>
-                        </motion.div>
+                        {/* Floating Elements Removed */}
                     </motion.div>
                 </div>
             </div>
