@@ -29,11 +29,7 @@ export function ScrollVideoBackground() {
         const tick = () => {
             if (video && !isNaN(video.duration) && video.duration > 0) {
                 const diff = targetTimeRef.current - video.currentTime;
-
-                // Only update if needed (reduces seeks)
-                if (Math.abs(diff) > 0.02) {
-                    video.currentTime += diff * 0.25; // 0.25 = easing (smooth)
-                }
+                video.currentTime += diff * 0.1; // Lower easing for smoother visual flow
             }
             requestRef.current = requestAnimationFrame(tick);
         };
