@@ -37,11 +37,8 @@ export function About() {
     return (
         <section id="about" className="pb-32 pt-0 relative overflow-hidden">
             {/* Background Elements */}
-            <div className="absolute inset-0">
-                <div className="absolute inset-0 bg-[url('/video-wallpaper-3d.jpeg')] bg-cover bg-center bg-no-repeat" />
-            </div>
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[100px] pointer-events-none" />
+            {/* Background Elements - Removed for unified page background */}
+            {/* <div className="absolute inset-0"> ... </div> */}
 
             <div className="container mx-auto px-4 relative z-10">
                 <div className="text-center mb-24">
@@ -67,7 +64,7 @@ export function About() {
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.1 }}
                             whileHover={{ y: -10 }}
-                            className={`group relative h-80 p-8 rounded-[2rem] bg-white/5 border border-white/10 backdrop-blur-sm hover:border-white/20 transition-all duration-500 flex flex-col justify-between overflow-hidden ${feature.shadow}`}
+                            className={`group relative h-80 p-8 rounded-[2rem] bg-white/15 border border-white/20 backdrop-blur-3xl hover:border-white/30 transition-all duration-500 flex flex-col justify-between overflow-hidden ${feature.shadow}`}
                         >
                             {/* Hover Accent Background */}
                             <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-500 ${feature.color.replace('bg-', 'bg-')}`} />

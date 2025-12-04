@@ -10,9 +10,7 @@ export function Contact() {
     return (
         <section id="contact" className="py-32 relative overflow-hidden">
             {/* Background Elements */}
-            <div className="absolute inset-0 bg-[#0B0F18]" />
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[100px] pointer-events-none" />
+            {/* Background Elements - Removed for unified page background */}
 
             <div className="container mx-auto px-4 max-w-5xl relative z-10">
                 <motion.div

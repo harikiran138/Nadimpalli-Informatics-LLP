@@ -13,11 +13,27 @@ export default function Home() {
 
       <main className="relative z-10">
         <Hero />
-        <div className="bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]">
-          <About />
-          <Services />
-          <Contact />
-          <Footer />
+        <div className="relative">
+          {/* Unified Background Video */}
+          <div className="absolute inset-0 z-0">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover sticky top-0"
+            >
+              <source src="/about-bg-unicorn.webm" type="video/webm" />
+            </video>
+
+          </div>
+
+          <div className="relative z-10">
+            <About />
+            <Services />
+            <Contact />
+            <Footer />
+          </div>
         </div>
       </main>
     </div>

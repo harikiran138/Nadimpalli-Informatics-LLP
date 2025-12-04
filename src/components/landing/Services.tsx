@@ -42,10 +42,7 @@ export function Services() {
     return (
         <section id="services" className="py-32 relative overflow-hidden">
             {/* Background Elements */}
-            {/* Background Elements */}
-            <div className="absolute inset-0 bg-[#0B0F18]" />
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[100px] pointer-events-none" />
+            {/* Background Elements - Removed for unified page background */}
 
             <div className="container mx-auto px-4 relative z-10">
                 <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
