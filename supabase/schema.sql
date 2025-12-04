@@ -39,6 +39,29 @@ CREATE TABLE IF NOT EXISTS public.teacher_profiles (
     gender TEXT NOT NULL,
     qualification TEXT NOT NULL,
     experience_years TEXT NOT NULL,
+    bio TEXT,
+    phone TEXT,
+    email TEXT,
+    address TEXT,
+    skills TEXT, -- Comma separated string
+    
+    -- New Comprehensive Fields
+    designation TEXT,
+    subjects TEXT[], -- Array of subjects
+    office_room TEXT,
+    availability TEXT, -- Office hours
+    
+    -- JSONB Columns for Complex Lists
+    education JSONB DEFAULT '[]'::jsonb,
+    experience_teaching JSONB DEFAULT '[]'::jsonb,
+    experience_admin JSONB DEFAULT '[]'::jsonb,
+    publications JSONB DEFAULT '[]'::jsonb,
+    awards JSONB DEFAULT '[]'::jsonb,
+    projects JSONB DEFAULT '[]'::jsonb,
+    events JSONB DEFAULT '[]'::jsonb,
+    memberships JSONB DEFAULT '[]'::jsonb,
+    student_interaction JSONB DEFAULT '{}'::jsonb, -- Timetable, links, etc.
+    
     is_profile_complete BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()

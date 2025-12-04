@@ -21,7 +21,11 @@ export default function OnboardingPage() {
         doj: "",
         gender: "",
         qualification: "",
-        experience: ""
+        experience: "",
+        bio: "",
+        phone: "",
+        email: "",
+        skills: ""
     });
 
     const programs = ["CSE", "CSM", "AI&ML", "ECE", "EEE", "CIVIL", "MECH"];
@@ -47,7 +51,11 @@ export default function OnboardingPage() {
                         doj: formData.doj,
                         gender: formData.gender,
                         qualification: formData.qualification,
-                        experience_years: formData.experience
+                        experience_years: formData.experience,
+                        bio: formData.bio,
+                        phone: formData.phone,
+                        email: formData.email,
+                        skills: formData.skills
                     }
                 ]);
 
@@ -94,13 +102,13 @@ export default function OnboardingPage() {
                             <motion.div
                                 className="h-full bg-blue-600"
                                 initial={{ width: "0%" }}
-                                animate={{ width: step === 1 ? "50%" : "100%" }}
+                                animate={{ width: step === 1 ? "33%" : step === 2 ? "66%" : "100%" }}
                             />
                         </div>
                     </div>
 
                     <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                        {step === 1 ? (
+                        {step === 1 && (
                             <motion.div
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -202,7 +210,9 @@ export default function OnboardingPage() {
                                     Next Step <ChevronRight className="ml-2 w-5 h-5" />
                                 </Button>
                             </motion.div>
-                        ) : (
+                        )}
+
+                        {step === 2 && (
                             <motion.div
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -242,6 +252,74 @@ export default function OnboardingPage() {
                                         type="button"
                                         variant="ghost"
                                         onClick={() => setStep(1)}
+                                        className="flex-1 h-14 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-bold"
+                                    >
+                                        Back
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        onClick={() => setStep(3)}
+                                        className="flex-[2] h-14 rounded-xl bg-slate-900 text-white font-bold text-lg hover:bg-slate-800 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-slate-900/20 transition-all"
+                                    >
+                                        Next Step <ChevronRight className="ml-2 w-5 h-5" />
+                                    </Button>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {step === 3 && (
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="space-y-6"
+                            >
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-slate-700 ml-1">Bio / About Me</label>
+                                    <textarea
+                                        placeholder="Tell us a bit about yourself..."
+                                        value={formData.bio}
+                                        onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                                        className="w-full h-24 p-4 rounded-xl bg-white/50 border border-white/60 text-slate-800 placeholder:text-slate-400 focus:bg-white/80 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium resize-none"
+                                    />
+                                </div>
+
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-slate-700 ml-1">Phone Number</label>
+                                        <Input
+                                            placeholder="+91 98765 43210"
+                                            value={formData.phone}
+                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                            className="h-12 rounded-xl bg-white/50 border-white/60 text-slate-800 placeholder:text-slate-400 focus:bg-white/80 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-slate-700 ml-1">Email Address</label>
+                                        <Input
+                                            type="email"
+                                            placeholder="you@example.com"
+                                            value={formData.email}
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            className="h-12 rounded-xl bg-white/50 border-white/60 text-slate-800 placeholder:text-slate-400 focus:bg-white/80 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-slate-700 ml-1">Skills (Comma Separated)</label>
+                                    <Input
+                                        placeholder="React, Python, Machine Learning..."
+                                        value={formData.skills}
+                                        onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
+                                        className="h-12 rounded-xl bg-white/50 border-white/60 text-slate-800 placeholder:text-slate-400 focus:bg-white/80 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium"
+                                    />
+                                </div>
+
+                                <div className="flex gap-4 mt-8">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        onClick={() => setStep(2)}
                                         className="flex-1 h-14 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-bold"
                                     >
                                         Back
