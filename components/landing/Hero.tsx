@@ -34,13 +34,13 @@ export function Hero() {
                 </video>
             </div>
 
-            <div className="container mx-auto px-4 z-10 flex flex-col items-center justify-center text-center">
+            <div className="container mx-auto px-4 z-10 flex flex-col items-start justify-center text-left">
                 {/* Text Content */}
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="max-w-4xl flex flex-col items-center"
+                    className="max-w-4xl flex flex-col items-start"
                 >
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -67,7 +67,7 @@ export function Hero() {
                         Seamless technology for the smartest campuses. Precision-built modules for the modern educational ecosystem.
                     </p>
 
-                    <div className="flex flex-wrap gap-4 justify-center">
+                    <div className="flex flex-wrap gap-4 justify-start">
                         <Button size="lg" className="h-14 px-8 rounded-full bg-black hover:bg-black/80 text-slate-200 text-lg shadow-[0_0_20px_rgba(0,0,0,0.3)] border border-slate-700">
                             Get a Demo
                             <ChevronRight className="ml-2 h-5 w-5" />
