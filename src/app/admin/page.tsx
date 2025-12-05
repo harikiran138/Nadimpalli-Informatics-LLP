@@ -161,20 +161,7 @@ export default function AdminDashboard() {
 
     return (
         <div className="flex h-screen overflow-hidden font-sans relative text-slate-800">
-            {/* Background Video Layer */}
-            <div className="fixed inset-0 z-0">
-                <video
-                    ref={videoRef}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover opacity-20"
-                >
-                    <source src="/hero-video.mp4" type="video/mp4" />
-                </video>
-                <div className="absolute inset-0 bg-[#E0E5EC]/80 backdrop-blur-sm" />
-            </div>
+
 
             {/* 3D Floating Shapes */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
