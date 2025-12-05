@@ -2,13 +2,16 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Activity, Shield, LogOut, Search, Plus, Save, X, Trash2, Edit2, CheckCircle, AlertCircle } from "lucide-react";
+import { Users, Activity, Shield, LogOut, Search, Plus, Save, X, Trash2, Edit2, CheckCircle, AlertCircle, Eye, FileText, Phone, Mail, Briefcase, GraduationCap, Award, Calendar, BookOpen, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { UserProfile } from "@/types/profile";
+import { Tabs, TabsContent as TabContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Assuming similar ui components or just simple divs as above
 
 const supabase = createClient();
+
 
 interface Employee {
     id: string;
@@ -16,6 +19,7 @@ interface Employee {
     full_name: string;
     password_hash: string;
     created_at: string;
+    profile?: UserProfile; // Joined profile data
 }
 
 export default function AdminDashboard() {
@@ -23,10 +27,14 @@ export default function AdminDashboard() {
     const [adminIds, setAdminIds] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+    const [activeTab, setActiveTab] = useState<"dashboard" | "employees">("dashboard");
 
     // Editing State
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<Partial<Employee>>({});
+
+    // View Details State
+    const [viewingEmployee, setViewingEmployee] = useState<Employee | null>(null);
 
     // Create State
     const [showCreate, setShowCreate] = useState(false);
@@ -37,17 +45,10 @@ export default function AdminDashboard() {
         isAdmin: false
     });
 
-    const videoRef = useRef<HTMLVideoElement>(null);
-
-    useEffect(() => {
-        if (videoRef.current) {
-            videoRef.current.playbackRate = 0.75;
-        }
-    }, []);
-
     // Fetch Data
     const fetchData = useCallback(async () => {
         try {
+            // 1. Fetch Basic Employees
             const { data: emps, error: empError } = await supabase
                 .from('employees')
                 .select('*')
@@ -55,13 +56,27 @@ export default function AdminDashboard() {
 
             if (empError) throw empError;
 
+            // 2. Fetch Detailed Profiles
+            const { data: profiles, error: profError } = await supabase
+                .from('teacher_profiles')
+                .select('*');
+
+            if (profError) throw profError;
+
+            // 3. Fetch Admins
             const { data: adms, error: admError } = await supabase
                 .from('admins')
                 .select('employee_id');
 
             if (admError) throw admError;
 
-            setEmployees(emps || []);
+            // 4. Merge Data
+            const mergedEmployees = emps?.map(emp => ({
+                ...emp,
+                profile: profiles?.find(p => p.employee_id === emp.employee_id)
+            })) || [];
+
+            setEmployees(mergedEmployees);
             setAdminIds(new Set(adms?.map(a => a.employee_id) || []));
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -76,7 +91,22 @@ export default function AdminDashboard() {
 
         const empChannel = supabase
             .channel('public:employees')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, fetchData)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'employees' }, (payload) => {
+                // Handle Real-time events
+                if (payload.eventType === 'INSERT') {
+                    fetchData(); // Simplest way to get the merged data is to refetch
+                } else if (payload.eventType === 'DELETE') {
+                    // Real-time remove
+                    setEmployees(prev => prev.filter(e => e.id !== payload.old.id));
+                } else if (payload.eventType === 'UPDATE') {
+                    fetchData();
+                }
+            })
+            .subscribe();
+
+        const profileChannel = supabase
+            .channel('public:teacher_profiles')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'teacher_profiles' }, fetchData)
             .subscribe();
 
         const admChannel = supabase
@@ -86,6 +116,7 @@ export default function AdminDashboard() {
 
         return () => {
             supabase.removeChannel(empChannel);
+            supabase.removeChannel(profileChannel);
             supabase.removeChannel(admChannel);
         };
     }, [fetchData]);
@@ -94,6 +125,18 @@ export default function AdminDashboard() {
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            // 0. Check for duplicate ID
+            const { data: existing } = await supabase
+                .from('employees')
+                .select('id')
+                .eq('employee_id', newEmployee.employeeId)
+                .maybeSingle();
+
+            if (existing) {
+                alert("Error: Employee ID '" + newEmployee.employeeId + "' already exists.");
+                return;
+            }
+
             const { error: empError } = await supabase.from('employees').insert([{
                 full_name: newEmployee.fullName,
                 employee_id: newEmployee.employeeId,
@@ -101,14 +144,40 @@ export default function AdminDashboard() {
             }]);
             if (empError) throw empError;
 
+            // Also create a skeleton profile entry with defaults
+            await supabase.from('teacher_profiles').insert([{
+                employee_id: newEmployee.employeeId,
+                email: newEmployee.employeeId + "@example.com", // Placeholder
+                full_name: newEmployee.fullName,
+                designation: 'Staff',
+                program: 'General',
+                username: newEmployee.employeeId, // Required field
+                dob: '1900-01-01', // Placeholder
+                doj: new Date().toISOString().split('T')[0], // Today's date
+                address: 'N/A', // Placeholder
+                gender: 'Not Specified', // Placeholder
+                skills: '', // Placeholder
+                qualification: 'N/A', // Placeholder
+                experience_years: '0' // Placeholder
+            }]);
+
             if (newEmployee.isAdmin) {
                 await supabase.from('admins').insert([{ employee_id: newEmployee.employeeId }]);
             }
 
             setNewEmployee({ fullName: "", employeeId: "", password: "", isAdmin: false });
             setShowCreate(false);
+            // Switch to employees tab to see new addition
+            setActiveTab("employees");
+            // Force fetch to ensure UI is in sync
+            fetchData();
         } catch (error: any) {
-            alert("Error creating: " + error.message);
+            console.error("Creation error:", error);
+            if (error.code === '23505') { // Postgres unique constraint error code
+                alert("Error: This Employee ID is already registered.");
+            } else {
+                alert("Error creating employee: " + error.message);
+            }
         }
     };
 
@@ -129,12 +198,30 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure? This action cannot be undone.")) return;
+    const handleDelete = async (id: string, employeeId: string) => {
+        if (!confirm("Are you sure? This action cannot be undone and will delete all profile data.")) return;
+
+        // OPTIMISTIC UPDATE: Remove immediately from UI
+        setEmployees(prev => prev.filter(e => e.id !== id));
+
         try {
-            await supabase.from('employees').delete().eq('id', id);
+            // 1. Delete Profile Data FIRST
+            await supabase.from('teacher_profiles').delete().eq('employee_id', employeeId);
+
+            // 2. Delete Admin Status
+            await supabase.from('admins').delete().eq('employee_id', employeeId);
+
+            // 3. Delete User Account
+            const { error: empError } = await supabase.from('employees').delete().eq('id', id);
+
+            if (empError) {
+                // Revert optimistic update if failed (optional, but good practice)
+                throw empError;
+            }
+
         } catch (error: any) {
             alert("Error deleting: " + error.message);
+            fetchData(); // Re-fetch to restore state if error occurred
         }
     };
 
@@ -149,19 +236,18 @@ export default function AdminDashboard() {
         show: {
             opacity: 1,
             transition: {
-                staggerChildren: 0.1
+                staggerChildren: 0.05
             }
         }
     };
 
     const itemVariants = {
-        hidden: { opacity: 0, y: 20 },
-        show: { opacity: 1, y: 0 }
+        hidden: { opacity: 0, scale: 0.9 },
+        show: { opacity: 1, scale: 1 }
     };
 
     return (
         <div className="flex h-screen overflow-hidden font-sans relative text-slate-800">
-
 
             {/* 3D Floating Shapes */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -182,35 +268,45 @@ export default function AdminDashboard() {
                 />
             </div>
 
-            {/* Sidebar */}
+            {/* Sidebar - Matching Profile Page */}
             <motion.aside
-                initial={{ x: -50, opacity: 0 }}
+                initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                className="w-72 hidden md:flex flex-col h-full m-4 rounded-[2rem] bg-white/40 backdrop-blur-2xl border border-white/50 shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] relative z-20"
+                className="w-80 hidden lg:flex flex-col m-4 rounded-[2.5rem] bg-white/40 backdrop-blur-2xl border border-white/50 shadow-xl overflow-y-auto custom-scrollbar z-20"
             >
-                <div className="p-8 border-b border-white/20">
-                    <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg shadow-blue-500/20 flex items-center justify-center">
-                            <Shield className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-bold tracking-tight text-slate-800">Admin<span className="text-blue-600">Panel</span></h1>
-                            <p className="text-xs text-slate-500 font-medium">Management System</p>
+                <div className="p-8 text-center border-b border-white/20">
+                    <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-blue-100 to-white p-1 shadow-lg mb-4 relative flex items-center justify-center">
+                        <div className="w-full h-full rounded-full bg-slate-200/50 flex items-center justify-center text-blue-600">
+                            <Shield className="w-12 h-12" />
                         </div>
                     </div>
+                    <h2 className="text-xl font-bold text-slate-800 leading-tight">Admin<span className="text-blue-600">Panel</span></h2>
+                    <p className="text-sm text-slate-500 font-bold mt-1">Management System</p>
+                    <p className="text-xs text-blue-500 font-medium">Administrator Access</p>
                 </div>
-                <nav className="flex-1 p-6 space-y-3">
-                    <Button variant="ghost" className="w-full justify-start h-12 rounded-xl bg-blue-600/10 text-blue-700 font-bold hover:bg-blue-600/20 transition-all hover:scale-105 active:scale-95">
-                        <Activity className="w-5 h-5 mr-3" /> Live Dashboard
+
+                <nav className="flex-1 p-6 space-y-2">
+                    <Button
+                        variant="ghost"
+                        onClick={() => setActiveTab("dashboard")}
+                        className={`w-full justify-start h-14 rounded-2xl font-bold transition-all ${activeTab === "dashboard" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30" : "text-slate-600 hover:bg-white/40"}`}
+                    >
+                        <Activity className={`w-5 h-5 mr-3 ${activeTab === "dashboard" ? "text-white" : "text-slate-400"}`} />
+                        Live Dashboard
                     </Button>
-                    <Button variant="ghost" className="w-full justify-start h-12 rounded-xl text-slate-600 font-medium hover:bg-white/40 hover:text-slate-900 transition-all hover:scale-105 active:scale-95">
-                        <Users className="w-5 h-5 mr-3" /> Employees
+                    <Button
+                        variant="ghost"
+                        onClick={() => setActiveTab("employees")}
+                        className={`w-full justify-start h-14 rounded-2xl font-bold transition-all ${activeTab === "employees" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30" : "text-slate-600 hover:bg-white/40"}`}
+                    >
+                        <Users className={`w-5 h-5 mr-3 ${activeTab === "employees" ? "text-white" : "text-slate-400"}`} />
+                        Employees
                     </Button>
                 </nav>
-                <div className="p-6 border-t border-white/20">
+
+                <div className="p-6">
                     <Link href="/login">
-                        <Button variant="ghost" className="w-full justify-start h-12 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 font-medium transition-all hover:scale-105 active:scale-95">
+                        <Button variant="ghost" className="w-full justify-start h-14 rounded-2xl text-red-500 hover:bg-red-50 hover:text-red-600 font-bold">
                             <LogOut className="w-5 h-5 mr-3" /> Logout
                         </Button>
                     </Link>
@@ -218,140 +314,107 @@ export default function AdminDashboard() {
             </motion.aside>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col overflow-hidden relative z-10 p-4 pl-0">
-                {/* Header */}
-                <motion.header
-                    initial={{ y: -20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    className="h-24 px-8 mb-4 rounded-[2rem] bg-white/40 backdrop-blur-2xl border border-white/50 shadow-sm flex items-center justify-between"
-                >
+            <main className="flex-1 flex flex-col h-full overflow-hidden relative z-10 p-4 lg:pl-0">
+                {/* Header - Matching Profile Page */}
+                <header className="h-20 px-8 mb-4 rounded-[2.5rem] bg-white/40 backdrop-blur-2xl border border-white/50 shadow-sm flex items-center justify-between shrink-0">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-800">Dashboard Overview</h1>
-                        <p className="text-slate-500 text-sm">Welcome back, Admin</p>
+                        <h1 className="text-2xl font-bold text-slate-800">
+                            {activeTab === "dashboard" ? "Dashboard Overview" : "Employee Database"}
+                        </h1>
+                        <p className="text-slate-500 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            System Online
+                        </p>
                     </div>
+
                     <div className="flex items-center gap-4">
-                        <div className="relative w-72 group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                        <div className="relative group/search hidden md:block">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <Input
-                                placeholder="Search employees..."
+                                placeholder="Search..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-12 h-12 bg-white/50 border-white/60 text-slate-800 placeholder:text-slate-400 focus:bg-white/80 focus:border-blue-500/30 focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all shadow-sm hover:shadow-md"
+                                className="pl-10 h-10 w-64 rounded-xl bg-white/50 border-white/60 focus:bg-white/90 shadow-sm transition-all"
                             />
                         </div>
                         <Button
-                            onClick={() => setShowCreate(!showCreate)}
-                            className="h-12 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl px-6 shadow-lg shadow-blue-600/20 font-medium transition-all hover:scale-105 active:scale-95"
+                            onClick={() => setShowCreate(true)}
+                            className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-600/20 font-bold px-6"
                         >
-                            <Plus className="w-5 h-5 mr-2" /> Add Employee
+                            <Plus className="w-4 h-4 mr-2" /> Add New
                         </Button>
                     </div>
-                </motion.header>
+                </header>
 
                 {/* Scrollable Content */}
                 <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="show"
-                    className="flex-1 overflow-y-auto space-y-6 pr-2 custom-scrollbar"
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-20 space-y-6"
                 >
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <StatCard
-                            title="Total Employees"
-                            value={employees.length}
-                            icon={<Users className="w-6 h-6 text-blue-600" />}
-                            color="blue"
-                            delay={0}
-                        />
-                        <StatCard
-                            title="Administrators"
-                            value={adminIds.size}
-                            icon={<Shield className="w-6 h-6 text-purple-600" />}
-                            color="purple"
-                            delay={0.1}
-                        />
-                        <StatCard
-                            title="System Status"
-                            value="Active"
-                            icon={<Activity className="w-6 h-6 text-emerald-600" />}
-                            color="emerald"
-                            delay={0.2}
-                        />
-                    </div>
-
-                    {/* Create Form (Collapsible) */}
+                    {/* Create Form (Always visible if toggled) */}
                     <AnimatePresence>
                         {showCreate && (
                             <motion.div
-                                initial={{ height: 0, opacity: 0, scale: 0.95 }}
-                                animate={{ height: "auto", opacity: 1, scale: 1 }}
-                                exit={{ height: 0, opacity: 0, scale: 0.95 }}
-                                className="overflow-hidden"
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden mb-6"
                             >
-                                <div className="bg-white/60 border border-white/60 rounded-[2rem] p-8 backdrop-blur-xl shadow-lg relative overflow-hidden">
-                                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/40 to-transparent pointer-events-none" />
-
-                                    <h3 className="text-xl font-bold mb-6 flex items-center gap-3 text-slate-800 relative z-10">
-                                        <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
-                                            <Plus className="w-5 h-5" />
-                                        </div>
-                                        New Employee Details
-                                    </h3>
-                                    <form onSubmit={handleCreate} className="grid md:grid-cols-2 gap-6 relative z-10">
+                                <div className="bg-white/40 border border-white/50 rounded-[2rem] p-8 backdrop-blur-2xl shadow-sm relative overflow-hidden">
+                                    <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2"><Plus className="w-5 h-5 text-blue-500" /> New Employee Registration</h3>
+                                    <form onSubmit={handleCreate} className="grid md:grid-cols-2 gap-6">
                                         <div className="space-y-4">
                                             <div className="space-y-2">
-                                                <label className="text-sm font-bold text-slate-700 ml-1">Full Name</label>
+                                                <label className="text-xs font-bold text-slate-500 uppercase">Full Name</label>
                                                 <Input
                                                     placeholder="e.g. John Doe"
                                                     value={newEmployee.fullName}
                                                     onChange={e => setNewEmployee({ ...newEmployee, fullName: e.target.value })}
-                                                    className="h-12 rounded-xl bg-white/50 border-white/60 focus:bg-white/80 transition-all hover:bg-white/70"
+                                                    className="h-10 rounded-xl bg-white/90 border-white/60"
                                                     required
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-sm font-bold text-slate-700 ml-1">Employee ID</label>
+                                                <label className="text-xs font-bold text-slate-500 uppercase">Employee ID</label>
                                                 <Input
                                                     placeholder="e.g. EMP001"
                                                     value={newEmployee.employeeId}
                                                     onChange={e => setNewEmployee({ ...newEmployee, employeeId: e.target.value })}
-                                                    className="h-12 rounded-xl bg-white/50 border-white/60 focus:bg-white/80 transition-all hover:bg-white/70"
+                                                    className="h-10 rounded-xl bg-white/90 border-white/60"
                                                     required
                                                 />
                                             </div>
                                         </div>
                                         <div className="space-y-4">
                                             <div className="space-y-2">
-                                                <label className="text-sm font-bold text-slate-700 ml-1">Password</label>
+                                                <label className="text-xs font-bold text-slate-500 uppercase">Password</label>
                                                 <Input
                                                     type="password"
                                                     placeholder="••••••••"
                                                     value={newEmployee.password}
                                                     onChange={e => setNewEmployee({ ...newEmployee, password: e.target.value })}
-                                                    className="h-12 rounded-xl bg-white/50 border-white/60 focus:bg-white/80 transition-all hover:bg-white/70"
+                                                    className="h-10 rounded-xl bg-white/90 border-white/60"
                                                     required
                                                 />
                                             </div>
-                                            <div className="pt-8">
-                                                <label className="flex items-center gap-4 p-4 rounded-xl bg-white/50 border border-white/60 cursor-pointer hover:bg-white/80 transition-all group hover:shadow-sm">
-                                                    <div className="relative flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={newEmployee.isAdmin}
-                                                            onChange={e => setNewEmployee({ ...newEmployee, isAdmin: e.target.checked })}
-                                                            className="peer sr-only"
-                                                        />
-                                                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                                    </div>
-                                                    <span className="text-sm font-bold text-slate-600 group-hover:text-slate-800 transition-colors">Grant Admin Privileges</span>
+                                            <div className="pt-6">
+                                                <label className="flex items-center gap-4 p-3 rounded-xl bg-white/50 border border-white/60 cursor-pointer hover:bg-white/80 transition-all">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={newEmployee.isAdmin}
+                                                        onChange={e => setNewEmployee({ ...newEmployee, isAdmin: e.target.checked })}
+                                                        className="w-5 h-5 rounded text-blue-600 border-gray-300 focus:ring-blue-500"
+                                                    />
+                                                    <span className="text-sm font-bold text-slate-700">Grant Admin Privileges</span>
                                                 </label>
                                             </div>
                                         </div>
                                         <div className="md:col-span-2 flex justify-end gap-3 mt-4">
-                                            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)} className="h-12 px-6 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100">Cancel</Button>
-                                            <Button type="submit" className="h-12 px-8 bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-600/20 font-bold hover:scale-105 active:scale-95 transition-all">Create Account</Button>
+                                            <Button type="button" variant="ghost" onClick={() => setShowCreate(false)} className="rounded-xl text-red-500 hover:bg-red-50 font-bold">Cancel</Button>
+                                            <Button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold shadow-lg shadow-blue-600/20">Create Account</Button>
                                         </div>
                                     </form>
                                 </div>
@@ -359,128 +422,428 @@ export default function AdminDashboard() {
                         )}
                     </AnimatePresence>
 
-                    {/* Employee List */}
-                    <motion.div
-                        variants={itemVariants}
-                        className="bg-white/40 border border-white/50 rounded-[2rem] overflow-hidden backdrop-blur-2xl shadow-sm hover:shadow-md transition-shadow duration-300"
-                    >
-                        <div className="p-8 border-b border-white/20 flex justify-between items-center">
-                            <div>
-                                <h2 className="text-xl font-bold text-slate-800">Employee Directory</h2>
-                                <p className="text-sm text-slate-500">Manage your team members</p>
+                    {activeTab === "dashboard" ? (
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <StatCard
+                                    title="Total Employees"
+                                    value={employees.length}
+                                    icon={<Users className="w-5 h-5 text-blue-600" />}
+                                    color="text-blue-600"
+                                    delay={0}
+                                />
+                                <StatCard
+                                    title="Administrators"
+                                    value={adminIds.size}
+                                    icon={<Shield className="w-5 h-5 text-purple-600" />}
+                                    color="text-purple-600"
+                                    delay={0.1}
+                                />
+                                <StatCard
+                                    title="System Status"
+                                    value="Active"
+                                    icon={<Activity className="w-5 h-5 text-emerald-600" />}
+                                    color="text-emerald-600"
+                                    delay={0.2}
+                                />
                             </div>
-                            <span className="text-xs font-bold text-blue-600 bg-blue-100 px-3 py-1.5 rounded-full">
-                                {filteredEmployees.length} Records
-                            </span>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-white/30 text-slate-500 text-xs uppercase tracking-wider font-bold">
-                                    <tr>
-                                        <th className="p-6">Employee</th>
-                                        <th className="p-6">ID</th>
-                                        <th className="p-6">Role</th>
-                                        <th className="p-6 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/20">
-                                    {filteredEmployees.map((emp, index) => (
-                                        <motion.tr
-                                            key={emp.id}
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: index * 0.05 }}
-                                            className="hover:bg-white/40 transition-colors group"
-                                        >
-                                            <td className="p-6">
-                                                {editingId === emp.id ? (
-                                                    <Input
-                                                        value={editForm.full_name}
-                                                        onChange={e => setEditForm({ ...editForm, full_name: e.target.value })}
-                                                        className="h-10 bg-white/80 border-blue-200"
-                                                        autoFocus
-                                                    />
-                                                ) : (
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-slate-200 to-white border border-white shadow-sm flex items-center justify-center text-sm font-bold text-slate-600 group-hover:scale-110 transition-transform">
-                                                            {emp.full_name.charAt(0)}
+                    ) : (
+                        <div className="space-y-4">
+                            {filteredEmployees.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center p-12 bg-white/40 rounded-[2rem] border border-white/50">
+                                    <div className="p-4 bg-white/50 rounded-full mb-4 shadow-sm">
+                                        <Search className="w-8 h-8 text-slate-400" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-800 mb-1">No employees found</h3>
+                                    <p className="text-slate-500 font-medium">Try adjusting your search.</p>
+                                </div>
+                            ) : (
+                                <div className="pb-20">
+                                    {/* Profile-Style Table Container */}
+                                    <div className="bg-white/40 backdrop-blur-2xl border border-white/50 shadow-sm rounded-[2rem] overflow-hidden flex flex-col relative z-20">
+
+                                        {/* Table Header */}
+                                        <div className="grid grid-cols-12 gap-4 px-8 py-6 border-b border-white/30 bg-white/20 text-xs font-bold uppercase tracking-widest text-slate-500">
+                                            <div className="col-span-4 pl-2">Employee</div>
+                                            <div className="col-span-2">ID</div>
+                                            <div className="col-span-3">Designation</div>
+                                            <div className="col-span-2">Contact</div>
+                                            <div className="col-span-1 text-right">Action</div>
+                                        </div>
+
+                                        {/* Table Body */}
+                                        <div className="divide-y divide-white/30">
+                                            {filteredEmployees.map((emp, index) => (
+                                                <motion.div
+                                                    key={emp.id}
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    transition={{ delay: index * 0.02 }}
+                                                    className="grid grid-cols-12 gap-4 px-8 py-5 hover:bg-white/40 transition-colors duration-200 group items-center"
+                                                >
+                                                    {/* Avatar & Name */}
+                                                    <div className="col-span-4 flex items-center gap-4">
+                                                        <div className="relative shrink-0">
+                                                            <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-sm font-bold text-slate-700">
+                                                                {emp.full_name.charAt(0)}
+                                                            </div>
+                                                            {adminIds.has(emp.employee_id) && (
+                                                                <div className="absolute -bottom-1 -right-1 bg-purple-500 text-white border border-white rounded-full p-0.5 shadow-sm">
+                                                                    <Shield className="w-2 h-2" />
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        <span className="font-bold text-slate-700">{emp.full_name}</span>
+                                                        <div className="min-w-0">
+                                                            <h3 className="text-sm font-bold text-slate-800 truncate">{emp.full_name}</h3>
+                                                            {adminIds.has(emp.employee_id) && (
+                                                                <span className="text-[10px] font-bold text-purple-600 block leading-tight">Admin</span>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                )}
-                                            </td>
-                                            <td className="p-6 text-slate-500 font-mono text-sm font-medium">
-                                                {editingId === emp.id ? (
-                                                    <Input
-                                                        value={editForm.employee_id}
-                                                        onChange={e => setEditForm({ ...editForm, employee_id: e.target.value })}
-                                                        className="h-10 bg-white/80 border-blue-200"
-                                                    />
-                                                ) : (
-                                                    emp.employee_id
-                                                )}
-                                            </td>
-                                            <td className="p-6">
-                                                {adminIds.has(emp.employee_id) ? (
-                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-100 text-purple-600 text-xs font-bold border border-purple-200 shadow-sm">
-                                                        <Shield className="w-3 h-3" /> Admin
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-500 text-xs font-bold border border-slate-200 shadow-sm">
-                                                        <Users className="w-3 h-3" /> User
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="p-6 text-right">
-                                                {editingId === emp.id ? (
-                                                    <div className="flex justify-end gap-2">
-                                                        <Button size="icon" variant="ghost" onClick={() => handleUpdate(emp.id)} className="h-9 w-9 bg-green-100 text-green-600 hover:bg-green-200 rounded-full hover:scale-110 transition-transform">
-                                                            <CheckCircle className="w-5 h-5" />
-                                                        </Button>
-                                                        <Button size="icon" variant="ghost" onClick={() => setEditingId(null)} className="h-9 w-9 bg-slate-100 text-slate-500 hover:bg-slate-200 rounded-full hover:scale-110 transition-transform">
-                                                            <X className="w-5 h-5" />
-                                                        </Button>
+
+                                                    {/* ID */}
+                                                    <div className="col-span-2">
+                                                        <span className="font-mono text-xs font-bold text-slate-500">
+                                                            {emp.employee_id}
+                                                        </span>
                                                     </div>
-                                                ) : (
-                                                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+
+                                                    {/* Designation */}
+                                                    <div className="col-span-3">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xs font-bold text-slate-700 truncate">{emp.profile?.designation || "-"}</span>
+                                                            <span className="text-[10px] font-medium text-slate-500 truncate mt-0.5">
+                                                                {emp.profile?.program || "General"}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Contact */}
+                                                    <div className="col-span-2">
+                                                        <div className="flex flex-col gap-1">
+                                                            {(emp.profile?.email) ? (
+                                                                <div className="flex items-center gap-1.5 text-xs text-slate-600 truncate group/link">
+                                                                    <Mail className="w-3 h-3 text-slate-400" />
+                                                                    <span className="truncate max-w-[140px] opacity-80 group-hover:opacity-100 transition-opacity">{emp.profile.email}</span>
+                                                                </div>
+                                                            ) : <span className="text-[10px] text-slate-400 italic">No Email</span>}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Actions */}
+                                                    <div className="col-span-1 flex justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
                                                         <Button
                                                             size="icon"
                                                             variant="ghost"
-                                                            onClick={() => {
-                                                                setEditingId(emp.id);
-                                                                setEditForm(emp);
-                                                            }}
-                                                            className="h-9 w-9 text-blue-500 hover:bg-blue-50 hover:text-blue-600 rounded-full hover:scale-110 transition-transform"
+                                                            onClick={() => setViewingEmployee(emp)}
+                                                            className="h-8 w-8 rounded-lg hover:bg-white text-slate-500 hover:text-blue-600 transition-colors"
+                                                            title="View"
                                                         >
-                                                            <Edit2 className="w-4 h-4" />
+                                                            <Eye className="w-4 h-4" />
                                                         </Button>
                                                         <Button
                                                             size="icon"
                                                             variant="ghost"
-                                                            onClick={() => handleDelete(emp.id)}
-                                                            className="h-9 w-9 text-red-400 hover:bg-red-50 hover:text-red-500 rounded-full hover:scale-110 transition-transform"
+                                                            onClick={() => handleDelete(emp.id, emp.employee_id)}
+                                                            className="h-8 w-8 rounded-lg hover:bg-white text-slate-500 hover:text-red-500 transition-colors"
+                                                            title="Delete"
                                                         >
                                                             <Trash2 className="w-4 h-4" />
                                                         </Button>
                                                     </div>
-                                                )}
-                                            </td>
-                                        </motion.tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            {filteredEmployees.length === 0 && (
-                                <div className="p-12 text-center text-slate-400 flex flex-col items-center gap-4">
-                                    <div className="p-4 rounded-full bg-slate-100">
-                                        <Search className="w-8 h-8 text-slate-300" />
+                                                </motion.div>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <p>No employees found matching your search.</p>
                                 </div>
                             )}
                         </div>
-                    </motion.div>
+                    )}
                 </motion.div>
             </main>
+
+            {/* View Full Profile Modal */}
+            <AnimatePresence>
+                {viewingEmployee && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md"
+                        onClick={() => setViewingEmployee(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            onClick={e => e.stopPropagation()}
+                            className="w-full max-w-4xl bg-white/80 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/60 overflow-hidden flex flex-col max-h-[85vh] relative"
+                        >
+                            {/* Modal Header */}
+                            <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-blue-600 to-purple-600 opacity-10 z-0" />
+                            <div className="relative z-10 px-8 py-6 flex justify-between items-start">
+                                <div className="flex items-center gap-6">
+                                    <div className="w-20 h-20 rounded-2xl bg-white shadow-xl flex items-center justify-center text-3xl font-black text-slate-700 border-4 border-white transform rotate-3">
+                                        {viewingEmployee.full_name.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <h2 className="text-3xl font-black text-slate-800 tracking-tight">{viewingEmployee.full_name}</h2>
+                                        <div className="flex items-center gap-3 mt-1">
+                                            <span className="px-3 py-1 rounded-full bg-blue-100/80 text-blue-700 text-xs font-bold uppercase tracking-wider border border-blue-200">
+                                                {viewingEmployee.profile?.designation || "Staff"}
+                                            </span>
+                                            <span className="px-3 py-1 rounded-full bg-slate-100/80 text-slate-600 text-xs font-bold uppercase tracking-wider border border-slate-200">
+                                                {viewingEmployee.profile?.program || "General"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setViewingEmployee(null)}
+                                    className="rounded-full bg-white/50 hover:bg-white text-slate-500 hover:text-red-500 transition-all shadow-sm"
+                                >
+                                    <X className="w-6 h-6" />
+                                </Button>
+                            </div>
+
+                            {/* Modal Content - Tabbed View */}
+                            <TabsContent viewingEmployee={viewingEmployee} />
+
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
+    const [activeTab, setActiveTab] = useState<"overview" | "timeline" | "research" | "more">("overview");
+
+    const tabs = [
+        { id: "overview", label: "Overview", icon: <User className="w-4 h-4" /> },
+        { id: "timeline", label: "Timeline", icon: <Briefcase className="w-4 h-4" /> },
+        { id: "research", label: "Research", icon: <BookOpen className="w-4 h-4" /> },
+        { id: "more", label: "More Info", icon: <Award className="w-4 h-4" /> },
+    ];
+
+    return (
+        <div className="flex-1 flex flex-col min-h-0 relative z-10">
+            {/* Tab Navigation */}
+            <div className="px-8 border-b border-slate-200/60 flex items-center gap-1 overflow-x-auto custom-scrollbar">
+                {tabs.map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as any)}
+                        className={`flex items-center gap-2 px-6 py-4 text-sm font-bold transition-all relative ${activeTab === tab.id ? "text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
+                    >
+                        {tab.icon}
+                        {tab.label}
+                        {activeTab === tab.id && (
+                            <motion.div
+                                layoutId="activeTabIndicator"
+                                className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 rounded-t-full"
+                            />
+                        )}
+                    </button>
+                ))}
+            </div>
+
+            {/* Scrollable Body */}
+            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-white/30">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-8"
+                    >
+                        {activeTab === "overview" && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-6">
+                                    <div className="p-6 rounded-[2rem] bg-white/60 border border-white max-w-full shadow-sm">
+                                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">About</h3>
+                                        <p className="text-slate-700 leading-relaxed font-medium">
+                                            {viewingEmployee.profile?.bio || "No biography available."}
+                                        </p>
+                                    </div>
+                                    <div className="p-6 rounded-[2rem] bg-indigo-50/50 border border-indigo-100 shadow-sm">
+                                        <h3 className="text-sm font-black text-indigo-400 uppercase tracking-widest mb-4">Teaching Philosophy</h3>
+                                        <p className="text-slate-700 leading-relaxed font-medium italic">
+                                            "{viewingEmployee.profile?.teaching_philosophy || "No philosophy statement added."}"
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="space-y-6">
+                                    <div className="p-6 rounded-[2rem] bg-white border border-white shadow-sm space-y-4">
+                                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Contact Details</h3>
+                                        <InfoRow label="Email" value={viewingEmployee.profile?.email} icon={<Mail className="w-4 h-4 text-blue-500" />} />
+                                        <InfoRow label="Phone" value={viewingEmployee.profile?.phone} icon={<Phone className="w-4 h-4 text-emerald-500" />} />
+                                        <InfoRow label="Office" value={viewingEmployee.profile?.office_room} icon={<MapPin className="w-4 h-4 text-red-500" />} />
+                                        <InfoRow label="Availability" value={viewingEmployee.profile?.availability} icon={<Clock className="w-4 h-4 text-amber-500" />} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="p-5 rounded-[2rem] bg-blue-50/50 border border-blue-100 text-center">
+                                            <div className="text-3xl font-black text-blue-600 mb-1">{viewingEmployee.profile?.experience_years || 0}</div>
+                                            <div className="text-xs font-bold text-slate-500 uppercase">Years Exp.</div>
+                                        </div>
+                                        <div className="p-5 rounded-[2rem] bg-purple-50/50 border border-purple-100 text-center">
+                                            <div className="text-3xl font-black text-purple-600 mb-1">{viewingEmployee.profile?.publications?.length || 0}</div>
+                                            <div className="text-xs font-bold text-slate-500 uppercase">Publications</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === "timeline" && (
+                            <div className="space-y-8">
+                                <section>
+                                    <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-4">
+                                        <GraduationCap className="w-5 h-5 text-blue-500" /> Education
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {viewingEmployee.profile?.education?.length ? (
+                                            viewingEmployee.profile.education.map((edu, i) => (
+                                                <div key={i} className="p-5 rounded-2xl bg-white/50 border border-white hover:bg-white transition-colors shadow-sm">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <h4 className="font-bold text-slate-800">{edu.degree} {edu.specialization && <span className="text-slate-500 font-medium">- {edu.specialization}</span>}</h4>
+                                                            <p className="text-sm text-slate-600 font-medium">{edu.institution}</p>
+                                                        </div>
+                                                        <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold">{edu.year}</span>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : <div className="text-slate-400 italic font-medium px-4">No education details added.</div>}
+                                    </div>
+                                </section>
+                                <section>
+                                    <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-4">
+                                        <Briefcase className="w-5 h-5 text-emerald-500" /> Professional Experience
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {viewingEmployee.profile?.experience_teaching?.length ? (
+                                            viewingEmployee.profile.experience_teaching.map((exp, i) => (
+                                                <div key={i} className="p-5 rounded-2xl bg-white/50 border border-white hover:bg-white transition-colors shadow-sm">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <h4 className="font-bold text-slate-800">{exp.role}</h4>
+                                                            <p className="text-sm text-slate-600 font-medium">{exp.institution}</p>
+                                                        </div>
+                                                        <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-bold">{exp.duration}</span>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : <div className="text-slate-400 italic font-medium px-4">No experience details added.</div>}
+                                    </div>
+                                </section>
+                            </div>
+                        )}
+
+                        {activeTab === "research" && (
+                            <div className="space-y-8">
+                                <section>
+                                    <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-4">
+                                        <BookOpen className="w-5 h-5 text-purple-500" /> Publications
+                                    </h3>
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {viewingEmployee.profile?.publications?.length ? (
+                                            viewingEmployee.profile.publications.map((pub, i) => (
+                                                <div key={i} className="p-5 rounded-2xl bg-white/50 border border-white hover:bg-white transition-colors shadow-sm">
+                                                    <div className="flex gap-4">
+                                                        <span className="text-2xl opacity-20 font-black text-slate-400">{(i + 1).toString().padStart(2, '0')}</span>
+                                                        <div>
+                                                            <h4 className="font-bold text-slate-800 leading-snug">{pub.title}</h4>
+                                                            <p className="text-sm text-slate-600 mt-1 font-medium italic">{pub.journal} • {pub.year}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : <div className="text-slate-400 italic font-medium px-4">No publications listed.</div>}
+                                    </div>
+                                </section>
+                                <section>
+                                    <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-4">
+                                        <LayoutGrid className="w-5 h-5 text-indigo-500" /> Projects
+                                    </h3>
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {viewingEmployee.profile?.projects?.length ? (
+                                            viewingEmployee.profile.projects.map((proj, i) => (
+                                                <div key={i} className="p-5 rounded-2xl bg-white/50 border border-white hover:bg-white transition-colors shadow-sm">
+                                                    <h4 className="font-bold text-slate-800">{proj.title}</h4>
+                                                    <p className="text-sm text-slate-600 mt-2">{proj.summary}</p>
+                                                    <div className="mt-3 flex gap-2">
+                                                        <span className="px-2 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase rounded">{proj.year}</span>
+                                                        {proj.amount && <span className="px-2 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase rounded">{proj.amount}</span>}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : <div className="text-slate-400 italic font-medium px-4">No projects listed.</div>}
+                                    </div>
+                                </section>
+                            </div>
+                        )}
+
+                        {activeTab === "more" && (
+                            <div className="space-y-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <section>
+                                        <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-4">
+                                            <Award className="w-5 h-5 text-amber-500" /> Awards
+                                        </h3>
+                                        <div className="space-y-3">
+                                            {viewingEmployee.profile?.awards?.length ? (
+                                                viewingEmployee.profile.awards.map((award, i) => (
+                                                    <div key={i} className="p-4 rounded-xl bg-amber-50/50 border border-amber-100 flex justify-between items-center">
+                                                        <span className="font-bold text-slate-800 text-sm">{award.title}</span>
+                                                        <span className="text-xs font-bold text-amber-600 bg-white px-2 py-1 rounded shadow-sm">{award.year}</span>
+                                                    </div>
+                                                ))
+                                            ) : <div className="text-slate-400 italic font-medium px-4">No awards listed.</div>}
+                                        </div>
+                                    </section>
+                                    <section>
+                                        <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-4">
+                                            <Users className="w-5 h-5 text-cyan-500" /> Memberships
+                                        </h3>
+                                        <div className="space-y-3">
+                                            {viewingEmployee.profile?.memberships?.length ? (
+                                                viewingEmployee.profile.memberships.map((mem, i) => (
+                                                    <div key={i} className="p-4 rounded-xl bg-cyan-50/50 border border-cyan-100 flex justify-between items-center">
+                                                        <span className="font-bold text-slate-800 text-sm">{mem.organization}</span>
+                                                        <span className="text-xs font-bold text-cyan-600 bg-white px-2 py-1 rounded shadow-sm">{mem.year}</span>
+                                                    </div>
+                                                ))
+                                            ) : <div className="text-slate-400 italic font-medium px-4">No memberships listed.</div>}
+                                        </div>
+                                    </section>
+                                </div>
+                            </div>
+                        )}
+                    </motion.div>
+                </AnimatePresence>
+            </div>
+        </div>
+    );
+}
+
+function InfoRow({ label, value, icon }: { label: string, value?: string, icon?: React.ReactNode }) {
+    if (!value) return null;
+    return (
+        <div className="flex items-center gap-4">
+            <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm shrink-0">
+                {icon}
+            </div>
+            <div className="min-w-0">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
+                <p className="text-sm font-bold text-slate-800 truncate">{value}</p>
+            </div>
         </div>
     );
 }
@@ -491,8 +854,8 @@ function StatCard({ title, value, icon, color, delay }: { title: string, value: 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay }}
-            whileHover={{ y: -5, scale: 1.02 }}
-            className={`p-6 rounded-[2rem] bg-white/40 border border-white/50 backdrop-blur-xl relative overflow-hidden group hover:bg-white/60 transition-all duration-300 shadow-sm hover:shadow-xl`}
+            whileHover={{ y: -5 }}
+            className={`p-6 rounded-[2rem] bg-white/40 border border-white/50 backdrop-blur-2xl relative overflow-hidden group hover:bg-white/50 transition-all duration-300 shadow-sm hover:shadow-lg`}
         >
             <div className={`absolute -right-6 -top-6 w-32 h-32 bg-${color}-500/10 rounded-full blur-3xl group-hover:bg-${color}-500/20 transition-colors`} />
 
