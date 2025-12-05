@@ -41,8 +41,7 @@ export default function LoginPage() {
             localStorage.setItem("user_id", employee.employee_id);
             localStorage.setItem("user_name", employee.full_name);
 
-            // 3. Check if Admin (Commented out to prevent auto-redirect)
-            /*
+            // 3. Check if Admin
             const { data: admin } = await supabase
                 .from('admins')
                 .select('*')
@@ -50,10 +49,11 @@ export default function LoginPage() {
                 .maybeSingle();
 
             if (admin) {
+                // Set a simple cookie for middleware check (since we aren't using Supabase Auth for this flow yet)
+                document.cookie = "admin_session=true; path=/; max-age=86400; SameSite=Lax";
                 router.push("/admin");
                 return;
             }
-            */
 
             // 4. Check for Profile
             const { data: profile } = await supabase
@@ -63,8 +63,11 @@ export default function LoginPage() {
                 .maybeSingle();
 
             if (profile) {
+                document.cookie = "employee_session=true; path=/; max-age=86400; SameSite=Lax";
                 router.push("/profile");
             } else {
+                // For onboarding, we might also need a session, but let's start with profile
+                document.cookie = "employee_session=true; path=/; max-age=86400; SameSite=Lax";
                 router.push("/onboarding");
             }
 
