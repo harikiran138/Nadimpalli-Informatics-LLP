@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Lock, User, ArrowLeft } from "lucide-react";
+import { Lock, User, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import Loader from "@/components/ui/Loader";
@@ -15,6 +15,7 @@ const supabase = createClient();
 export default function LoginPage() {
     const [employeeId, setEmployeeId] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
@@ -153,13 +154,20 @@ export default function LoginPage() {
                             <div className="relative group">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-black transition-colors" />
                                 <Input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
-                                    className="h-12 pl-12 rounded-xl bg-white/20 border-white/30 focus:bg-white/40 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium backdrop-blur-sm"
+                                    className="h-12 pl-12 pr-10 rounded-xl bg-white/20 border-white/30 focus:bg-white/40 focus:border-black/20 focus:ring-4 focus:ring-black/5 text-black placeholder:text-slate-500 transition-all shadow-sm font-medium backdrop-blur-sm"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-black transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
                             </div>
                         </div>
 

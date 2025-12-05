@@ -26,8 +26,8 @@ async function checkSchema() {
     console.log('Checking schema for teacher_profiles...');
 
     const { data, error } = await supabase
-        .from('teacher_profiles')
-        .select('bio')
+        .from('employees')
+        .select('role')
         .limit(1);
 
     if (error) {

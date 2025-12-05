@@ -50,7 +50,8 @@ export async function updateSession(request: NextRequest) {
     }
 
     if (request.nextUrl.pathname.startsWith('/profile')) {
-        if (!user) {
+        const employeeSession = request.cookies.get('employee_session')
+        if (!user && !employeeSession) {
             // For profile, we might still want to check user session, but for now let's keep it simple
             // If using custom auth, we might need a similar cookie for users
             const url = request.nextUrl.clone()
