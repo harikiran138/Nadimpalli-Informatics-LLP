@@ -41,7 +41,8 @@ export default function LoginPage() {
             localStorage.setItem("user_id", employee.employee_id);
             localStorage.setItem("user_name", employee.full_name);
 
-            // 3. Check if Admin
+            // 3. Check if Admin (Commented out to prevent auto-redirect)
+            /*
             const { data: admin } = await supabase
                 .from('admins')
                 .select('*')
@@ -52,6 +53,7 @@ export default function LoginPage() {
                 router.push("/admin");
                 return;
             }
+            */
 
             // 4. Check for Profile
             const { data: profile } = await supabase
@@ -185,13 +187,7 @@ export default function LoginPage() {
             </motion.div>
 
             {/* Full Screen Loader Overlay */}
-            {loading && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-                    <div className="scale-50 md:scale-75">
-                        <Loader />
-                    </div>
-                </div>
-            )}
+            {/* Full Screen Loader Overlay - Removed to prevent double loading */}
         </div>
     );
 }
