@@ -187,7 +187,13 @@ export default function LoginPage() {
             </motion.div>
 
             {/* Full Screen Loader Overlay */}
-            {/* Full Screen Loader Overlay - Removed to prevent double loading */}
+            {loading && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+                    <div className="scale-50 md:scale-75">
+                        <Loader />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
