@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import {
     Loader2, LogOut, Shield, Briefcase, GraduationCap, Calendar, User, Mail, Phone,
     MapPin, Clock, BookOpen, Award, FileText, Users, Globe, Linkedin, Twitter,
-    Plus, Trash2, Edit2, Save, ChevronRight, ExternalLink, QrCode
+    Plus, Trash2, Edit2, Save, ChevronRight, ExternalLink, QrCode, X, Check
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Loader from "@/components/ui/Loader";
 
 const supabase = createClient();
 
@@ -124,6 +125,7 @@ export default function ProfilePage() {
     const [editForm, setEditForm] = useState<UserProfile | null>(null);
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState("overview");
+    const [editingSection, setEditingSection] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -243,6 +245,7 @@ export default function ProfilePage() {
 
             setProfile(editForm);
             setIsEditing(false);
+            setEditingSection(null);
         } catch (err) {
             console.error("Error updating profile:", err);
             alert("Failed to update profile: " + (err as Error).message);
@@ -254,7 +257,9 @@ export default function ProfilePage() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#E0E5EC]">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <div className="scale-75">
+                    <Loader />
+                </div>
             </div>
         );
     }
@@ -408,7 +413,7 @@ export default function ProfilePage() {
                                             <textarea
                                                 value={editForm?.bio}
                                                 onChange={e => setEditForm(prev => prev ? { ...prev, bio: e.target.value } : null)}
-                                                className="w-full h-40 bg-white/60 border border-blue-200 rounded-2xl p-4 text-slate-700 font-medium focus:outline-none focus:ring-4 focus:ring-blue-500/10 resize-none text-lg leading-relaxed"
+                                                className="w-full h-40 bg-white/40 border border-white/60 rounded-2xl p-4 text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none text-lg leading-relaxed backdrop-blur-sm"
                                                 placeholder="Write a professional biography..."
                                             />
                                         ) : (
@@ -452,29 +457,44 @@ export default function ProfilePage() {
                                                 <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600"><GraduationCap className="w-5 h-5" /></div>
                                                 Education History
                                             </h3>
-                                            {isEditing && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        const newEdu = { degree: "", institution: "", year: "", grade: "" };
-                                                        setEditForm(prev => prev ? { ...prev, education: [...(prev.education || []), newEdu] } : null);
-                                                    }}
-                                                    className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
-                                                >
-                                                    <Plus className="w-4 h-4 mr-1" /> Add
-                                                </Button>
-                                            )}
+                                            <div className="flex gap-2">
+                                                {!isEditing && !editingSection && (
+                                                    <Button variant="ghost" size="sm" onClick={() => setEditingSection('education')} className="text-slate-400 hover:text-blue-600">
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </Button>
+                                                )}
+                                                {(isEditing || editingSection === 'education') && (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => {
+                                                                const newEdu = { degree: "", institution: "", year: "", grade: "" };
+                                                                setEditForm(prev => prev ? { ...prev, education: [...(prev.education || []), newEdu] } : null);
+                                                            }}
+                                                            className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                                                        >
+                                                            <Plus className="w-4 h-4 mr-1" /> Add
+                                                        </Button>
+                                                        {editingSection === 'education' && (
+                                                            <>
+                                                                <Button size="sm" variant="ghost" onClick={handleSave} className="text-green-600 hover:bg-green-50"><Check className="w-4 h-4" /></Button>
+                                                                <Button size="sm" variant="ghost" onClick={() => { setEditingSection(null); setEditForm(profile); }} className="text-red-400 hover:bg-red-50"><X className="w-4 h-4" /></Button>
+                                                            </>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {(isEditing ? editForm?.education : profile.education)?.length === 0 && (
+                                            {((isEditing || editingSection === 'education') ? editForm?.education : profile.education)?.length === 0 && (
                                                 <p className="text-slate-500 italic py-4 col-span-full">No education history listed.</p>
                                             )}
 
-                                            {(isEditing ? editForm?.education : profile.education)?.map((edu: Education, index: number) => (
+                                            {((isEditing || editingSection === 'education') ? editForm?.education : profile.education)?.map((edu: Education, index: number) => (
                                                 <div key={index} className="relative p-5 rounded-2xl bg-white/60 border border-white/60 shadow-sm hover:shadow-md transition-shadow">
-                                                    {isEditing && (
+                                                    {(isEditing || editingSection === 'education') && (
                                                         <Button
                                                             size="icon"
                                                             variant="ghost"
@@ -489,7 +509,7 @@ export default function ProfilePage() {
                                                         </Button>
                                                     )}
 
-                                                    {isEditing ? (
+                                                    {(isEditing || editingSection === 'education') ? (
                                                         <div className="space-y-3 pr-8">
                                                             <input
                                                                 placeholder="Degree (e.g. PhD)"
@@ -499,7 +519,7 @@ export default function ProfilePage() {
                                                                     newList[index] = { ...newList[index], degree: e.target.value };
                                                                     setEditForm(prev => prev ? { ...prev, education: newList } : null);
                                                                 }}
-                                                                className="bg-white/50 border border-indigo-100 rounded-lg px-3 py-2 text-sm font-bold w-full"
+                                                                className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm font-bold w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400"
                                                             />
                                                             <input
                                                                 placeholder="Institution"
@@ -509,7 +529,7 @@ export default function ProfilePage() {
                                                                     newList[index] = { ...newList[index], institution: e.target.value };
                                                                     setEditForm(prev => prev ? { ...prev, education: newList } : null);
                                                                 }}
-                                                                className="bg-white/50 border border-indigo-100 rounded-lg px-3 py-2 text-sm w-full"
+                                                                className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400"
                                                             />
                                                             <div className="flex gap-2">
                                                                 <input
@@ -520,7 +540,7 @@ export default function ProfilePage() {
                                                                         newList[index] = { ...newList[index], year: e.target.value };
                                                                         setEditForm(prev => prev ? { ...prev, education: newList } : null);
                                                                     }}
-                                                                    className="bg-white/50 border border-indigo-100 rounded-lg px-3 py-2 text-sm w-full"
+                                                                    className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400"
                                                                 />
                                                                 <input
                                                                     placeholder="Grade"
@@ -530,7 +550,7 @@ export default function ProfilePage() {
                                                                         newList[index] = { ...newList[index], grade: e.target.value };
                                                                         setEditForm(prev => prev ? { ...prev, education: newList } : null);
                                                                     }}
-                                                                    className="bg-white/50 border border-indigo-100 rounded-lg px-3 py-2 text-sm w-full"
+                                                                    className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400"
                                                                 />
                                                             </div>
                                                         </div>
@@ -552,15 +572,30 @@ export default function ProfilePage() {
 
                                     {/* Skills */}
                                     <div className="p-8 rounded-3xl bg-white/40 border border-white/60 shadow-lg backdrop-blur-sm">
-                                        <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                                            <div className="p-2 bg-purple-100 rounded-lg text-purple-600"><Award className="w-5 h-5" /></div>
-                                            Skills & Expertise
-                                        </h3>
-                                        {isEditing ? (
+                                        <div className="flex justify-between items-center mb-6">
+                                            <h3 className="text-xl font-bold text-slate-800 flex items-center gap-3">
+                                                <div className="p-2 bg-purple-100 rounded-lg text-purple-600"><Award className="w-5 h-5" /></div>
+                                                Skills & Expertise
+                                            </h3>
+                                            <div className="flex gap-2">
+                                                {!isEditing && !editingSection && (
+                                                    <Button variant="ghost" size="sm" onClick={() => setEditingSection('skills')} className="text-slate-400 hover:text-blue-600">
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </Button>
+                                                )}
+                                                {editingSection === 'skills' && (
+                                                    <>
+                                                        <Button size="sm" variant="ghost" onClick={handleSave} className="text-green-600 hover:bg-green-50"><Check className="w-4 h-4" /></Button>
+                                                        <Button size="sm" variant="ghost" onClick={() => { setEditingSection(null); setEditForm(profile); }} className="text-red-400 hover:bg-red-50"><X className="w-4 h-4" /></Button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {(isEditing || editingSection === 'skills') ? (
                                             <input
                                                 value={editForm?.skills}
                                                 onChange={e => setEditForm(prev => prev ? { ...prev, skills: e.target.value } : null)}
-                                                className="w-full bg-white/60 border border-purple-200 rounded-2xl px-6 py-4 text-slate-800 font-medium focus:outline-none focus:ring-4 focus:ring-purple-500/10 text-lg"
+                                                className="w-full bg-white/40 border border-white/60 rounded-2xl px-6 py-4 text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/20 text-lg backdrop-blur-sm"
                                                 placeholder="Comma separated skills..."
                                             />
                                         ) : (
@@ -587,29 +622,44 @@ export default function ProfilePage() {
                                                 <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><Briefcase className="w-5 h-5" /></div>
                                                 Teaching Experience
                                             </h3>
-                                            {isEditing && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        const newExp = { institution: "", role: "", duration: "", responsibilities: "" };
-                                                        setEditForm(prev => prev ? { ...prev, experience_teaching: [...(prev.experience_teaching || []), newExp] } : null);
-                                                    }}
-                                                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                                                >
-                                                    <Plus className="w-4 h-4 mr-1" /> Add
-                                                </Button>
-                                            )}
+                                            <div className="flex gap-2">
+                                                {!isEditing && !editingSection && (
+                                                    <Button variant="ghost" size="sm" onClick={() => setEditingSection('experience_teaching')} className="text-slate-400 hover:text-blue-600">
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </Button>
+                                                )}
+                                                {(isEditing || editingSection === 'experience_teaching') && (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => {
+                                                                const newExp = { institution: "", role: "", duration: "", responsibilities: "" };
+                                                                setEditForm(prev => prev ? { ...prev, experience_teaching: [...(prev.experience_teaching || []), newExp] } : null);
+                                                            }}
+                                                            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                                        >
+                                                            <Plus className="w-4 h-4 mr-1" /> Add
+                                                        </Button>
+                                                        {editingSection === 'experience_teaching' && (
+                                                            <>
+                                                                <Button size="sm" variant="ghost" onClick={handleSave} className="text-green-600 hover:bg-green-50"><Check className="w-4 h-4" /></Button>
+                                                                <Button size="sm" variant="ghost" onClick={() => { setEditingSection(null); setEditForm(profile); }} className="text-red-400 hover:bg-red-50"><X className="w-4 h-4" /></Button>
+                                                            </>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
 
                                         <div className="space-y-4">
-                                            {(isEditing ? editForm?.experience_teaching : profile.experience_teaching)?.length === 0 && (
+                                            {((isEditing || editingSection === 'experience_teaching') ? editForm?.experience_teaching : profile.experience_teaching)?.length === 0 && (
                                                 <p className="text-slate-500 italic text-center py-4">No teaching experience listed.</p>
                                             )}
 
-                                            {(isEditing ? editForm?.experience_teaching : profile.experience_teaching)?.map((exp: ExperienceTeaching, index: number) => (
+                                            {((isEditing || editingSection === 'experience_teaching') ? editForm?.experience_teaching : profile.experience_teaching)?.map((exp: ExperienceTeaching, index: number) => (
                                                 <div key={index} className="relative p-6 rounded-2xl bg-white/60 border border-white/60 shadow-sm group hover:bg-white/80 transition-colors">
-                                                    {isEditing && (
+                                                    {(isEditing || editingSection === 'experience_teaching') && (
                                                         <Button
                                                             size="icon"
                                                             variant="ghost"
@@ -624,7 +674,7 @@ export default function ProfilePage() {
                                                         </Button>
                                                     )}
 
-                                                    {isEditing ? (
+                                                    {(isEditing || editingSection === 'experience_teaching') ? (
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pr-8">
                                                             <input
                                                                 placeholder="Institution Name"
@@ -634,7 +684,7 @@ export default function ProfilePage() {
                                                                     newList[index] = { ...newList[index], institution: e.target.value };
                                                                     setEditForm(prev => prev ? { ...prev, experience_teaching: newList } : null);
                                                                 }}
-                                                                className="bg-white/50 border border-blue-100 rounded-lg px-3 py-2 text-sm font-bold w-full"
+                                                                className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm font-bold w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400"
                                                             />
                                                             <input
                                                                 placeholder="Role / Designation"
@@ -644,7 +694,7 @@ export default function ProfilePage() {
                                                                     newList[index] = { ...newList[index], role: e.target.value };
                                                                     setEditForm(prev => prev ? { ...prev, experience_teaching: newList } : null);
                                                                 }}
-                                                                className="bg-white/50 border border-blue-100 rounded-lg px-3 py-2 text-sm w-full"
+                                                                className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400"
                                                             />
                                                             <input
                                                                 placeholder="Duration"
@@ -654,7 +704,7 @@ export default function ProfilePage() {
                                                                     newList[index] = { ...newList[index], duration: e.target.value };
                                                                     setEditForm(prev => prev ? { ...prev, experience_teaching: newList } : null);
                                                                 }}
-                                                                className="bg-white/50 border border-blue-100 rounded-lg px-3 py-2 text-sm w-full"
+                                                                className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400"
                                                             />
                                                         </div>
                                                     ) : (
@@ -680,29 +730,44 @@ export default function ProfilePage() {
                                                 <div className="p-2 bg-purple-100 rounded-lg text-purple-600"><Shield className="w-5 h-5" /></div>
                                                 Administrative Roles
                                             </h3>
-                                            {isEditing && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        const newExp = { role: "", organization: "", description: "" };
-                                                        setEditForm(prev => prev ? { ...prev, experience_admin: [...(prev.experience_admin || []), newExp] } : null);
-                                                    }}
-                                                    className="text-purple-600 border-purple-200 hover:bg-purple-50"
-                                                >
-                                                    <Plus className="w-4 h-4 mr-1" /> Add
-                                                </Button>
-                                            )}
+                                            <div className="flex gap-2">
+                                                {!isEditing && !editingSection && (
+                                                    <Button variant="ghost" size="sm" onClick={() => setEditingSection('experience_admin')} className="text-slate-400 hover:text-blue-600">
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </Button>
+                                                )}
+                                                {(isEditing || editingSection === 'experience_admin') && (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => {
+                                                                const newExp = { role: "", organization: "", description: "" };
+                                                                setEditForm(prev => prev ? { ...prev, experience_admin: [...(prev.experience_admin || []), newExp] } : null);
+                                                            }}
+                                                            className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                                                        >
+                                                            <Plus className="w-4 h-4 mr-1" /> Add
+                                                        </Button>
+                                                        {editingSection === 'experience_admin' && (
+                                                            <>
+                                                                <Button size="sm" variant="ghost" onClick={handleSave} className="text-green-600 hover:bg-green-50"><Check className="w-4 h-4" /></Button>
+                                                                <Button size="sm" variant="ghost" onClick={() => { setEditingSection(null); setEditForm(profile); }} className="text-red-400 hover:bg-red-50"><X className="w-4 h-4" /></Button>
+                                                            </>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {(isEditing ? editForm?.experience_admin : profile.experience_admin)?.length === 0 && (
+                                            {((isEditing || editingSection === 'experience_admin') ? editForm?.experience_admin : profile.experience_admin)?.length === 0 && (
                                                 <p className="text-slate-500 italic text-center py-4 col-span-full">No administrative roles listed.</p>
                                             )}
 
-                                            {(isEditing ? editForm?.experience_admin : profile.experience_admin)?.map((exp: ExperienceAdmin, index: number) => (
+                                            {((isEditing || editingSection === 'experience_admin') ? editForm?.experience_admin : profile.experience_admin)?.map((exp: ExperienceAdmin, index: number) => (
                                                 <div key={index} className="relative p-6 rounded-2xl bg-white/60 border border-white/60 shadow-sm">
-                                                    {isEditing && (
+                                                    {(isEditing || editingSection === 'experience_admin') && (
                                                         <Button
                                                             size="icon"
                                                             variant="ghost"
@@ -717,7 +782,7 @@ export default function ProfilePage() {
                                                         </Button>
                                                     )}
 
-                                                    {isEditing ? (
+                                                    {(isEditing || editingSection === 'experience_admin') ? (
                                                         <div className="space-y-3 pr-8">
                                                             <input
                                                                 placeholder="Role"
@@ -727,7 +792,7 @@ export default function ProfilePage() {
                                                                     newList[index] = { ...newList[index], role: e.target.value };
                                                                     setEditForm(prev => prev ? { ...prev, experience_admin: newList } : null);
                                                                 }}
-                                                                className="bg-white/50 border border-purple-100 rounded-lg px-3 py-2 text-sm font-bold w-full"
+                                                                className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm font-bold w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400"
                                                             />
                                                             <input
                                                                 placeholder="Description"
@@ -737,7 +802,7 @@ export default function ProfilePage() {
                                                                     newList[index] = { ...newList[index], description: e.target.value };
                                                                     setEditForm(prev => prev ? { ...prev, experience_admin: newList } : null);
                                                                 }}
-                                                                className="bg-white/50 border border-purple-100 rounded-lg px-3 py-2 text-sm w-full"
+                                                                className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400"
                                                             />
                                                         </div>
                                                     ) : (
@@ -762,27 +827,42 @@ export default function ProfilePage() {
                                                 <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><BookOpen className="w-5 h-5" /></div>
                                                 Publications
                                             </h3>
-                                            {isEditing && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        const newPub = { title: "", journal: "", year: "", link: "" };
-                                                        setEditForm(prev => prev ? { ...prev, publications: [...(prev.publications || []), newPub] } : null);
-                                                    }}
-                                                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                                                >
-                                                    <Plus className="w-4 h-4 mr-1" /> Add
-                                                </Button>
-                                            )}
+                                            <div className="flex gap-2">
+                                                {!isEditing && !editingSection && (
+                                                    <Button variant="ghost" size="sm" onClick={() => setEditingSection('publications')} className="text-slate-400 hover:text-blue-600">
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </Button>
+                                                )}
+                                                {(isEditing || editingSection === 'publications') && (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => {
+                                                                const newPub = { title: "", journal: "", year: "", link: "" };
+                                                                setEditForm(prev => prev ? { ...prev, publications: [...(prev.publications || []), newPub] } : null);
+                                                            }}
+                                                            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                                        >
+                                                            <Plus className="w-4 h-4 mr-1" /> Add
+                                                        </Button>
+                                                        {editingSection === 'publications' && (
+                                                            <>
+                                                                <Button size="sm" variant="ghost" onClick={handleSave} className="text-green-600 hover:bg-green-50"><Check className="w-4 h-4" /></Button>
+                                                                <Button size="sm" variant="ghost" onClick={() => { setEditingSection(null); setEditForm(profile); }} className="text-red-400 hover:bg-red-50"><X className="w-4 h-4" /></Button>
+                                                            </>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="space-y-4">
-                                            {(isEditing ? editForm?.publications : profile.publications)?.length === 0 && (
+                                            {((isEditing || editingSection === 'publications') ? editForm?.publications : profile.publications)?.length === 0 && (
                                                 <p className="text-slate-500 italic text-center py-4">No publications listed.</p>
                                             )}
-                                            {(isEditing ? editForm?.publications : profile.publications)?.map((pub: Publication, index: number) => (
+                                            {((isEditing || editingSection === 'publications') ? editForm?.publications : profile.publications)?.map((pub: Publication, index: number) => (
                                                 <div key={index} className="relative p-5 rounded-2xl bg-white/60 border border-white/60 shadow-sm">
-                                                    {isEditing && (
+                                                    {(isEditing || editingSection === 'publications') && (
                                                         <Button
                                                             size="icon"
                                                             variant="ghost"
@@ -796,14 +876,14 @@ export default function ProfilePage() {
                                                             <Trash2 className="w-4 h-4" />
                                                         </Button>
                                                     )}
-                                                    {isEditing ? (
+                                                    {(isEditing || editingSection === 'publications') ? (
                                                         <div className="grid grid-cols-1 gap-3 pr-8">
-                                                            <input placeholder="Title" value={pub.title} onChange={e => { const l = [...(editForm?.publications || [])]; l[index].title = e.target.value; setEditForm(prev => prev ? { ...prev, publications: l } : null); }} className="bg-white/50 border border-blue-100 rounded-lg px-3 py-2 text-sm font-bold w-full" />
+                                                            <input placeholder="Title" value={pub.title} onChange={e => { const l = [...(editForm?.publications || [])]; l[index].title = e.target.value; setEditForm(prev => prev ? { ...prev, publications: l } : null); }} className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm font-bold w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400" />
                                                             <div className="flex gap-3">
-                                                                <input placeholder="Journal" value={pub.journal} onChange={e => { const l = [...(editForm?.publications || [])]; l[index].journal = e.target.value; setEditForm(prev => prev ? { ...prev, publications: l } : null); }} className="bg-white/50 border border-blue-100 rounded-lg px-3 py-2 text-sm w-full" />
-                                                                <input placeholder="Year" value={pub.year} onChange={e => { const l = [...(editForm?.publications || [])]; l[index].year = e.target.value; setEditForm(prev => prev ? { ...prev, publications: l } : null); }} className="bg-white/50 border border-blue-100 rounded-lg px-3 py-2 text-sm w-32" />
+                                                                <input placeholder="Journal" value={pub.journal} onChange={e => { const l = [...(editForm?.publications || [])]; l[index].journal = e.target.value; setEditForm(prev => prev ? { ...prev, publications: l } : null); }} className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400" />
+                                                                <input placeholder="Year" value={pub.year} onChange={e => { const l = [...(editForm?.publications || [])]; l[index].year = e.target.value; setEditForm(prev => prev ? { ...prev, publications: l } : null); }} className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-32 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400" />
                                                             </div>
-                                                            <input placeholder="Link" value={pub.link} onChange={e => { const l = [...(editForm?.publications || [])]; l[index].link = e.target.value; setEditForm(prev => prev ? { ...prev, publications: l } : null); }} className="bg-white/50 border border-blue-100 rounded-lg px-3 py-2 text-sm w-full" />
+                                                            <input placeholder="Link" value={pub.link} onChange={e => { const l = [...(editForm?.publications || [])]; l[index].link = e.target.value; setEditForm(prev => prev ? { ...prev, publications: l } : null); }} className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400" />
                                                         </div>
                                                     ) : (
                                                         <div>
@@ -831,27 +911,42 @@ export default function ProfilePage() {
                                                 <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600"><FileText className="w-5 h-5" /></div>
                                                 Research Projects
                                             </h3>
-                                            {isEditing && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        const newProj = { title: "", agency: "", amount: "", status: "" };
-                                                        setEditForm(prev => prev ? { ...prev, projects: [...(prev.projects || []), newProj] } : null);
-                                                    }}
-                                                    className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
-                                                >
-                                                    <Plus className="w-4 h-4 mr-1" /> Add
-                                                </Button>
-                                            )}
+                                            <div className="flex gap-2">
+                                                {!isEditing && !editingSection && (
+                                                    <Button variant="ghost" size="sm" onClick={() => setEditingSection('projects')} className="text-slate-400 hover:text-blue-600">
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </Button>
+                                                )}
+                                                {(isEditing || editingSection === 'projects') && (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => {
+                                                                const newProj = { title: "", agency: "", amount: "", status: "" };
+                                                                setEditForm(prev => prev ? { ...prev, projects: [...(prev.projects || []), newProj] } : null);
+                                                            }}
+                                                            className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+                                                        >
+                                                            <Plus className="w-4 h-4 mr-1" /> Add
+                                                        </Button>
+                                                        {editingSection === 'projects' && (
+                                                            <>
+                                                                <Button size="sm" variant="ghost" onClick={handleSave} className="text-green-600 hover:bg-green-50"><Check className="w-4 h-4" /></Button>
+                                                                <Button size="sm" variant="ghost" onClick={() => { setEditingSection(null); setEditForm(profile); }} className="text-red-400 hover:bg-red-50"><X className="w-4 h-4" /></Button>
+                                                            </>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="space-y-4">
-                                            {(isEditing ? editForm?.projects : profile.projects)?.length === 0 && (
+                                            {((isEditing || editingSection === 'projects') ? editForm?.projects : profile.projects)?.length === 0 && (
                                                 <p className="text-slate-500 italic text-center py-4">No projects listed.</p>
                                             )}
-                                            {(isEditing ? editForm?.projects : profile.projects)?.map((proj: Project, index: number) => (
+                                            {((isEditing || editingSection === 'projects') ? editForm?.projects : profile.projects)?.map((proj: Project, index: number) => (
                                                 <div key={index} className="relative p-5 rounded-2xl bg-white/60 border border-white/60 shadow-sm">
-                                                    {isEditing && (
+                                                    {(isEditing || editingSection === 'projects') && (
                                                         <Button
                                                             size="icon"
                                                             variant="ghost"
@@ -865,13 +960,13 @@ export default function ProfilePage() {
                                                             <Trash2 className="w-4 h-4" />
                                                         </Button>
                                                     )}
-                                                    {isEditing ? (
+                                                    {(isEditing || editingSection === 'projects') ? (
                                                         <div className="grid grid-cols-1 gap-3 pr-8">
-                                                            <input placeholder="Title" value={proj.title} onChange={e => { const l = [...(editForm?.projects || [])]; l[index].title = e.target.value; setEditForm(prev => prev ? { ...prev, projects: l } : null); }} className="bg-white/50 border border-emerald-100 rounded-lg px-3 py-2 text-sm font-bold w-full" />
+                                                            <input placeholder="Title" value={proj.title} onChange={e => { const l = [...(editForm?.projects || [])]; l[index].title = e.target.value; setEditForm(prev => prev ? { ...prev, projects: l } : null); }} className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm font-bold w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400" />
                                                             <div className="grid grid-cols-3 gap-3">
-                                                                <input placeholder="Agency" value={proj.agency} onChange={e => { const l = [...(editForm?.projects || [])]; l[index].agency = e.target.value; setEditForm(prev => prev ? { ...prev, projects: l } : null); }} className="bg-white/50 border border-emerald-100 rounded-lg px-3 py-2 text-sm w-full" />
-                                                                <input placeholder="Amount" value={proj.amount} onChange={e => { const l = [...(editForm?.projects || [])]; l[index].amount = e.target.value; setEditForm(prev => prev ? { ...prev, projects: l } : null); }} className="bg-white/50 border border-emerald-100 rounded-lg px-3 py-2 text-sm w-full" />
-                                                                <input placeholder="Status" value={proj.status} onChange={e => { const l = [...(editForm?.projects || [])]; l[index].status = e.target.value; setEditForm(prev => prev ? { ...prev, projects: l } : null); }} className="bg-white/50 border border-emerald-100 rounded-lg px-3 py-2 text-sm w-full" />
+                                                                <input placeholder="Agency" value={proj.agency} onChange={e => { const l = [...(editForm?.projects || [])]; l[index].agency = e.target.value; setEditForm(prev => prev ? { ...prev, projects: l } : null); }} className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400" />
+                                                                <input placeholder="Amount" value={proj.amount} onChange={e => { const l = [...(editForm?.projects || [])]; l[index].amount = e.target.value; setEditForm(prev => prev ? { ...prev, projects: l } : null); }} className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400" />
+                                                                <input placeholder="Status" value={proj.status} onChange={e => { const l = [...(editForm?.projects || [])]; l[index].status = e.target.value; setEditForm(prev => prev ? { ...prev, projects: l } : null); }} className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400" />
                                                             </div>
                                                         </div>
                                                     ) : (
@@ -894,16 +989,31 @@ export default function ProfilePage() {
                             {activeTab === "teaching" && (
                                 <div className="space-y-8">
                                     <div className="p-8 rounded-3xl bg-white/40 border border-white/60 shadow-lg backdrop-blur-sm">
-                                        <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                                            <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><BookOpen className="w-5 h-5" /></div>
-                                            Subjects Taught
-                                        </h3>
-                                        {isEditing ? (
+                                        <div className="flex justify-between items-center mb-6">
+                                            <h3 className="text-xl font-bold text-slate-800 flex items-center gap-3">
+                                                <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><BookOpen className="w-5 h-5" /></div>
+                                                Subjects Taught
+                                            </h3>
+                                            <div className="flex gap-2">
+                                                {!isEditing && !editingSection && (
+                                                    <Button variant="ghost" size="sm" onClick={() => setEditingSection('subjects')} className="text-slate-400 hover:text-blue-600">
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </Button>
+                                                )}
+                                                {editingSection === 'subjects' && (
+                                                    <>
+                                                        <Button size="sm" variant="ghost" onClick={handleSave} className="text-green-600 hover:bg-green-50"><Check className="w-4 h-4" /></Button>
+                                                        <Button size="sm" variant="ghost" onClick={() => { setEditingSection(null); setEditForm(profile); }} className="text-red-400 hover:bg-red-50"><X className="w-4 h-4" /></Button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {(isEditing || editingSection === 'subjects') ? (
                                             <div className="space-y-3">
                                                 <input
                                                     value={editForm?.subjects?.join(", ")}
                                                     onChange={e => setEditForm(prev => prev ? { ...prev, subjects: e.target.value.split(",").map(s => s.trim()) } : null)}
-                                                    className="w-full bg-white/60 border border-blue-200 rounded-2xl px-6 py-4 text-slate-800 font-medium focus:outline-none focus:ring-4 focus:ring-blue-500/10 text-lg"
+                                                    className="w-full bg-white/40 border border-white/60 rounded-2xl px-6 py-4 text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-lg backdrop-blur-sm"
                                                     placeholder="Comma separated subjects..."
                                                 />
                                                 <p className="text-sm text-slate-400 pl-2">Separate multiple subjects with commas.</p>
@@ -922,21 +1032,36 @@ export default function ProfilePage() {
                                     </div>
                                     {/* Student Interaction */}
                                     <div className="p-8 rounded-3xl bg-white/40 border border-white/60 shadow-lg backdrop-blur-sm">
-                                        <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-                                            <div className="p-2 bg-purple-100 rounded-lg text-purple-600"><Users className="w-5 h-5" /></div>
-                                            Student Interaction
-                                        </h3>
+                                        <div className="flex justify-between items-center mb-6">
+                                            <h3 className="text-xl font-bold text-slate-800 flex items-center gap-3">
+                                                <div className="p-2 bg-purple-100 rounded-lg text-purple-600"><Users className="w-5 h-5" /></div>
+                                                Student Interaction
+                                            </h3>
+                                            <div className="flex gap-2">
+                                                {!isEditing && !editingSection && (
+                                                    <Button variant="ghost" size="sm" onClick={() => setEditingSection('student_interaction')} className="text-slate-400 hover:text-blue-600">
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </Button>
+                                                )}
+                                                {editingSection === 'student_interaction' && (
+                                                    <>
+                                                        <Button size="sm" variant="ghost" onClick={handleSave} className="text-green-600 hover:bg-green-50"><Check className="w-4 h-4" /></Button>
+                                                        <Button size="sm" variant="ghost" onClick={() => { setEditingSection(null); setEditForm(profile); }} className="text-red-400 hover:bg-red-50"><X className="w-4 h-4" /></Button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="space-y-6">
                                                 <h4 className="font-bold text-slate-400 uppercase text-xs tracking-wider">Resources & Links</h4>
-                                                <InfoRow icon={Globe} label="Course Website / LMS" value={profile.student_interaction?.lms_link} isEditing={isEditing} onChange={(v: string) => setEditForm(prev => prev ? { ...prev, student_interaction: { ...prev.student_interaction, lms_link: v } } : null)} editValue={editForm?.student_interaction?.lms_link} placeholder="https://..." />
-                                                <InfoRow icon={Calendar} label="Meeting Scheduler" value={profile.student_interaction?.scheduler_link} isEditing={isEditing} onChange={(v: string) => setEditForm(prev => prev ? { ...prev, student_interaction: { ...prev.student_interaction, scheduler_link: v } } : null)} editValue={editForm?.student_interaction?.scheduler_link} placeholder="Calendly Link" />
+                                                <InfoRow icon={Globe} label="Course Website / LMS" value={profile.student_interaction?.lms_link} isEditing={isEditing || editingSection === 'student_interaction'} onChange={(v: string) => setEditForm(prev => prev ? { ...prev, student_interaction: { ...prev.student_interaction, lms_link: v } } : null)} editValue={editForm?.student_interaction?.lms_link} placeholder="https://..." />
+                                                <InfoRow icon={Calendar} label="Meeting Scheduler" value={profile.student_interaction?.scheduler_link} isEditing={isEditing || editingSection === 'student_interaction'} onChange={(v: string) => setEditForm(prev => prev ? { ...prev, student_interaction: { ...prev.student_interaction, scheduler_link: v } } : null)} editValue={editForm?.student_interaction?.scheduler_link} placeholder="Calendly Link" />
                                             </div>
                                             <div className="space-y-4">
                                                 <h4 className="font-bold text-slate-400 uppercase text-xs tracking-wider">Mentorship</h4>
                                                 <div className="p-6 rounded-2xl bg-blue-50/50 border border-blue-100">
                                                     <p className="text-sm text-blue-800 mb-3 font-bold uppercase tracking-wide">Mentoring Philosophy</p>
-                                                    {isEditing ? (
+                                                    {(isEditing || editingSection === 'student_interaction') ? (
                                                         <textarea
                                                             value={editForm?.student_interaction?.mentorship_philosophy}
                                                             onChange={e => setEditForm(prev => prev ? { ...prev, student_interaction: { ...prev.student_interaction, mentorship_philosophy: e.target.value } } : null)}
@@ -963,20 +1088,35 @@ export default function ProfilePage() {
                                                 <div className="p-2 bg-amber-100 rounded-lg text-amber-600"><Award className="w-5 h-5" /></div>
                                                 Awards & Honors
                                             </h3>
-                                            {isEditing && (
-                                                <Button size="sm" variant="outline" onClick={() => { const newAward = { title: "", year: "", issuer: "" }; setEditForm(prev => prev ? { ...prev, awards: [...(prev.awards || []), newAward] } : null); }} className="text-amber-600 border-amber-200 hover:bg-amber-50"><Plus className="w-4 h-4 mr-1" /> Add</Button>
-                                            )}
+                                            <div className="flex gap-2">
+                                                {!isEditing && !editingSection && (
+                                                    <Button variant="ghost" size="sm" onClick={() => setEditingSection('awards')} className="text-slate-400 hover:text-blue-600">
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </Button>
+                                                )}
+                                                {(isEditing || editingSection === 'awards') && (
+                                                    <>
+                                                        <Button size="sm" variant="outline" onClick={() => { const newAward = { title: "", year: "", issuer: "" }; setEditForm(prev => prev ? { ...prev, awards: [...(prev.awards || []), newAward] } : null); }} className="text-amber-600 border-amber-200 hover:bg-amber-50"><Plus className="w-4 h-4 mr-1" /> Add</Button>
+                                                        {editingSection === 'awards' && (
+                                                            <>
+                                                                <Button size="sm" variant="ghost" onClick={handleSave} className="text-green-600 hover:bg-green-50"><Check className="w-4 h-4" /></Button>
+                                                                <Button size="sm" variant="ghost" onClick={() => { setEditingSection(null); setEditForm(profile); }} className="text-red-400 hover:bg-red-50"><X className="w-4 h-4" /></Button>
+                                                            </>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {(isEditing ? editForm?.awards : profile.awards)?.length === 0 && <p className="text-slate-500 italic text-center py-4 col-span-full">No awards listed.</p>}
-                                            {(isEditing ? editForm?.awards : profile.awards)?.map((award: AwardItem, index: number) => (
+                                            {((isEditing || editingSection === 'awards') ? editForm?.awards : profile.awards)?.length === 0 && <p className="text-slate-500 italic text-center py-4 col-span-full">No awards listed.</p>}
+                                            {((isEditing || editingSection === 'awards') ? editForm?.awards : profile.awards)?.map((award: AwardItem, index: number) => (
                                                 <div key={index} className="relative p-5 rounded-2xl bg-white/60 border border-white/60 shadow-sm flex items-center gap-4">
                                                     <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shrink-0 shadow-inner"><Award className="w-6 h-6" /></div>
-                                                    {isEditing ? (
+                                                    {(isEditing || editingSection === 'awards') ? (
                                                         <div className="flex-1 grid grid-cols-1 gap-2 pr-8">
-                                                            <input placeholder="Title" value={award.title} onChange={e => { const l = [...(editForm?.awards || [])]; l[index].title = e.target.value; setEditForm(prev => prev ? { ...prev, awards: l } : null); }} className="bg-white/50 border border-amber-100 rounded-lg px-3 py-2 text-sm font-bold w-full" />
-                                                            <input placeholder="Issuer" value={award.issuer} onChange={e => { const l = [...(editForm?.awards || [])]; l[index].issuer = e.target.value; setEditForm(prev => prev ? { ...prev, awards: l } : null); }} className="bg-white/50 border border-amber-100 rounded-lg px-3 py-2 text-sm w-full" />
-                                                            <input placeholder="Year" value={award.year} onChange={e => { const l = [...(editForm?.awards || [])]; l[index].year = e.target.value; setEditForm(prev => prev ? { ...prev, awards: l } : null); }} className="bg-white/50 border border-amber-100 rounded-lg px-3 py-2 text-sm w-full" />
+                                                            <input placeholder="Title" value={award.title} onChange={e => { const l = [...(editForm?.awards || [])]; l[index].title = e.target.value; setEditForm(prev => prev ? { ...prev, awards: l } : null); }} className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm font-bold w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400" />
+                                                            <input placeholder="Issuer" value={award.issuer} onChange={e => { const l = [...(editForm?.awards || [])]; l[index].issuer = e.target.value; setEditForm(prev => prev ? { ...prev, awards: l } : null); }} className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400" />
+                                                            <input placeholder="Year" value={award.year} onChange={e => { const l = [...(editForm?.awards || [])]; l[index].year = e.target.value; setEditForm(prev => prev ? { ...prev, awards: l } : null); }} className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400" />
                                                         </div>
                                                     ) : (
                                                         <div className="flex-1">
@@ -984,7 +1124,7 @@ export default function ProfilePage() {
                                                             <p className="text-sm text-slate-500 font-medium">{award.issuer} • {award.year}</p>
                                                         </div>
                                                     )}
-                                                    {isEditing && <Button size="icon" variant="ghost" className="absolute top-2 right-2 text-red-400 hover:text-red-600" onClick={() => { const l = [...(editForm?.awards || [])]; l.splice(index, 1); setEditForm(prev => prev ? { ...prev, awards: l } : null); }}><Trash2 className="w-4 h-4" /></Button>}
+                                                    {(isEditing || editingSection === 'awards') && <Button size="icon" variant="ghost" className="absolute top-2 right-2 text-red-400 hover:text-red-600" onClick={() => { const l = [...(editForm?.awards || [])]; l.splice(index, 1); setEditForm(prev => prev ? { ...prev, awards: l } : null); }}><Trash2 className="w-4 h-4" /></Button>}
                                                 </div>
                                             ))}
                                         </div>
@@ -996,20 +1136,35 @@ export default function ProfilePage() {
                                                 <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600"><Globe className="w-5 h-5" /></div>
                                                 Professional Memberships
                                             </h3>
-                                            {isEditing && (
-                                                <Button size="sm" variant="outline" onClick={() => { const newMem = { organization: "", role: "", year: "" }; setEditForm(prev => prev ? { ...prev, memberships: [...(prev.memberships || []), newMem] } : null); }} className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"><Plus className="w-4 h-4 mr-1" /> Add</Button>
-                                            )}
+                                            <div className="flex gap-2">
+                                                {!isEditing && !editingSection && (
+                                                    <Button variant="ghost" size="sm" onClick={() => setEditingSection('memberships')} className="text-slate-400 hover:text-blue-600">
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </Button>
+                                                )}
+                                                {(isEditing || editingSection === 'memberships') && (
+                                                    <>
+                                                        <Button size="sm" variant="outline" onClick={() => { const newMem = { organization: "", role: "", year: "" }; setEditForm(prev => prev ? { ...prev, memberships: [...(prev.memberships || []), newMem] } : null); }} className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"><Plus className="w-4 h-4 mr-1" /> Add</Button>
+                                                        {editingSection === 'memberships' && (
+                                                            <>
+                                                                <Button size="sm" variant="ghost" onClick={handleSave} className="text-green-600 hover:bg-green-50"><Check className="w-4 h-4" /></Button>
+                                                                <Button size="sm" variant="ghost" onClick={() => { setEditingSection(null); setEditForm(profile); }} className="text-red-400 hover:bg-red-50"><X className="w-4 h-4" /></Button>
+                                                            </>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {(isEditing ? editForm?.memberships : profile.memberships)?.length === 0 && <p className="text-slate-500 italic text-center py-4 col-span-full">No memberships listed.</p>}
-                                            {(isEditing ? editForm?.memberships : profile.memberships)?.map((mem: Membership, index: number) => (
+                                            {((isEditing || editingSection === 'memberships') ? editForm?.memberships : profile.memberships)?.length === 0 && <p className="text-slate-500 italic text-center py-4 col-span-full">No memberships listed.</p>}
+                                            {((isEditing || editingSection === 'memberships') ? editForm?.memberships : profile.memberships)?.map((mem: Membership, index: number) => (
                                                 <div key={index} className="relative p-5 rounded-2xl bg-white/60 border border-white/60 shadow-sm">
-                                                    {isEditing && <Button size="icon" variant="ghost" className="absolute top-2 right-2 text-red-400 hover:text-red-600" onClick={() => { const l = [...(editForm?.memberships || [])]; l.splice(index, 1); setEditForm(prev => prev ? { ...prev, memberships: l } : null); }}><Trash2 className="w-4 h-4" /></Button>}
-                                                    {isEditing ? (
+                                                    {(isEditing || editingSection === 'memberships') && <Button size="icon" variant="ghost" className="absolute top-2 right-2 text-red-400 hover:text-red-600" onClick={() => { const l = [...(editForm?.memberships || [])]; l.splice(index, 1); setEditForm(prev => prev ? { ...prev, memberships: l } : null); }}><Trash2 className="w-4 h-4" /></Button>}
+                                                    {(isEditing || editingSection === 'memberships') ? (
                                                         <div className="grid grid-cols-1 gap-2 pr-8">
-                                                            <input placeholder="Organization" value={mem.organization} onChange={e => { const l = [...(editForm?.memberships || [])]; l[index].organization = e.target.value; setEditForm(prev => prev ? { ...prev, memberships: l } : null); }} className="bg-white/50 border border-indigo-100 rounded-lg px-3 py-2 text-sm font-bold w-full" />
-                                                            <input placeholder="Role" value={mem.role} onChange={e => { const l = [...(editForm?.memberships || [])]; l[index].role = e.target.value; setEditForm(prev => prev ? { ...prev, memberships: l } : null); }} className="bg-white/50 border border-indigo-100 rounded-lg px-3 py-2 text-sm w-full" />
-                                                            <input placeholder="Year" value={mem.year} onChange={e => { const l = [...(editForm?.memberships || [])]; l[index].year = e.target.value; setEditForm(prev => prev ? { ...prev, memberships: l } : null); }} className="bg-white/50 border border-indigo-100 rounded-lg px-3 py-2 text-sm w-full" />
+                                                            <input placeholder="Organization" value={mem.organization} onChange={e => { const l = [...(editForm?.memberships || [])]; l[index].organization = e.target.value; setEditForm(prev => prev ? { ...prev, memberships: l } : null); }} className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm font-bold w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400" />
+                                                            <input placeholder="Role" value={mem.role} onChange={e => { const l = [...(editForm?.memberships || [])]; l[index].role = e.target.value; setEditForm(prev => prev ? { ...prev, memberships: l } : null); }} className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400" />
+                                                            <input placeholder="Year" value={mem.year} onChange={e => { const l = [...(editForm?.memberships || [])]; l[index].year = e.target.value; setEditForm(prev => prev ? { ...prev, memberships: l } : null); }} className="bg-transparent border-b border-slate-300 px-0 py-2 text-slate-800 text-sm w-full focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400" />
                                                         </div>
                                                     ) : (
                                                         <div>
@@ -1052,7 +1207,7 @@ function InfoRow({
                         value={editValue}
                         onChange={e => onChange(e.target.value)}
                         placeholder={placeholder}
-                        className="w-full bg-white/80 border border-blue-200 rounded px-2 py-1 text-slate-800 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        className="w-full bg-transparent border-b border-slate-300 px-0 py-1 text-slate-800 text-sm font-bold focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-400"
                     />
                 ) : (
                     <p className="text-slate-800 font-bold truncate">{value || "Not provided"}</p>

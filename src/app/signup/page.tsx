@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Lock, User, Loader2, ArrowLeft, BadgeCheck } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import Loader from "@/components/ui/Loader";
 
 const supabase = createClient();
 
@@ -182,13 +183,7 @@ export default function SignupPage() {
                             disabled={loading}
                             className="w-full h-12 rounded-xl bg-black hover:bg-slate-900 text-white text-lg font-bold shadow-lg shadow-black/20 transition-all hover:scale-[1.02] active:scale-[0.98] mt-2"
                         >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Creating Account...
-                                </>
-                            ) : (
-                                "Sign Up"
-                            )}
+                            {loading ? "Creating Account..." : "Sign Up"}
                         </Button>
                     </form>
 
@@ -202,6 +197,15 @@ export default function SignupPage() {
                     </div>
                 </div>
             </motion.div>
+
+            {/* Full Screen Loader Overlay */}
+            {loading && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+                    <div className="scale-75">
+                        <Loader />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

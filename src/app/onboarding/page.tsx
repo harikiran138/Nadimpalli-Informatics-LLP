@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { SmartDateInput } from "@/components/ui/smart-date-input";
+import Loader from "@/components/ui/Loader";
 
 const supabase = createClient();
 
@@ -336,13 +337,9 @@ export default function OnboardingPage() {
                                     <Button
                                         type="submit"
                                         disabled={loading}
-                                        className="flex-[2] h-14 rounded-xl bg-blue-600 text-white font-bold text-lg hover:bg-blue-500 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-blue-600/30 transition-all"
+                                        className="w-full h-12 rounded-xl bg-black hover:bg-slate-900 text-white text-lg font-bold shadow-lg shadow-black/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                                     >
-                                        {loading ? (
-                                            <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Saving Profile...</>
-                                        ) : (
-                                            <><CheckCircle2 className="w-5 h-5 mr-2" /> Complete Profile</>
-                                        )}
+                                        {loading ? "Saving..." : "Complete Profile"}
                                     </Button>
                                 </div>
                             </motion.div>
@@ -350,6 +347,15 @@ export default function OnboardingPage() {
                     </form>
                 </div>
             </motion.div>
+
+            {/* Full Screen Loader Overlay */}
+            {loading && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+                    <div className="scale-75">
+                        <Loader />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
