@@ -2,13 +2,13 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Activity, Shield, LogOut, Search, Plus, Save, X, Trash2, Edit2, CheckCircle, AlertCircle, Eye, FileText, Phone, Mail, Briefcase, GraduationCap, Award, Calendar, BookOpen, LayoutGrid, List } from "lucide-react";
+import { Users, User, Activity, Shield, LogOut, Search, Plus, Save, X, Trash2, Edit2, CheckCircle, AlertCircle, Eye, FileText, Phone, Mail, Briefcase, GraduationCap, Award, Calendar, BookOpen, LayoutGrid, List, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { UserProfile } from "@/types/profile";
-import { Tabs, TabsContent as TabContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Assuming similar ui components or just simple divs as above
+
 
 const supabase = createClient();
 

@@ -103,9 +103,7 @@ export default function ProfilePage() {
         try {
             // Update teacher_profiles
             const { error } = await supabase.from('teacher_profiles').upsert({
-                employee_id: profile.employee_id,
                 ...formData,
-                // Ensure specific fields map correctly if naming differs, but types align mostly
                 updated_at: new Date().toISOString()
             });
 
@@ -247,23 +245,23 @@ export default function ProfilePage() {
                                     <h3 className="text-sm font-bold text-slate-400 uppercase mb-6">Personal Details</h3>
                                     <div className="space-y-4">
                                         <InfoRow label="Employee ID" value={formData.employee_id} icon={Briefcase} />
-                                        <InfoRow label="Gender" value={formData.gender} icon={User} isEditing={isEditing} onChange={v => setFormData({ ...formData, gender: v })} />
-                                        <InfoRow label="Date of Birth" value={formData.dob} icon={Calendar} isEditing={isEditing} onChange={v => setFormData({ ...formData, dob: v })} />
-                                        <InfoRow label="Join Date" value={formData.doj} icon={Calendar} isEditing={isEditing} onChange={v => setFormData({ ...formData, doj: v })} />
-                                        <InfoRow label="Office" value={formData.office_room} icon={MapPin} isEditing={isEditing} onChange={v => setFormData({ ...formData, office_room: v })} />
-                                        <InfoRow label="Office Hours" value={formData.availability} icon={Clock} isEditing={isEditing} onChange={v => setFormData({ ...formData, availability: v })} />
+                                        <InfoRow label="Gender" value={formData.gender} icon={User} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, gender: v })} />
+                                        <InfoRow label="Date of Birth" value={formData.dob} icon={Calendar} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, dob: v })} />
+                                        <InfoRow label="Join Date" value={formData.doj} icon={Calendar} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, doj: v })} />
+                                        <InfoRow label="Office" value={formData.office_room} icon={MapPin} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, office_room: v })} />
+                                        <InfoRow label="Office Hours" value={formData.availability} icon={Clock} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, availability: v })} />
                                     </div>
                                 </div>
                                 {/* Contact Card (Privacy Logic Simulated) */}
                                 <div className="bg-white/40 border border-white/50 rounded-[2rem] p-8 backdrop-blur-2xl shadow-sm">
                                     <h3 className="text-sm font-bold text-slate-400 uppercase mb-6">Contact Information</h3>
                                     <div className="space-y-4">
-                                        <InfoRow label="Email (Official)" value={formData.email} icon={Mail} isEditing={isEditing} onChange={v => setFormData({ ...formData, email: v })} />
+                                        <InfoRow label="Email (Official)" value={formData.email} icon={Mail} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, email: v })} />
                                         <div className="relative">
-                                            <InfoRow label="Phone (Private)" value={formData.phone} icon={Phone} isEditing={isEditing} onChange={v => setFormData({ ...formData, phone: v })} />
+                                            <InfoRow label="Phone (Private)" value={formData.phone} icon={Phone} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, phone: v })} />
                                             {!isEditing && <div className="absolute top-0 right-0 bg-yellow-100 text-yellow-700 text-[10px] px-2 py-0.5 rounded-full font-bold border border-yellow-200">Admins Only</div>}
                                         </div>
-                                        <InfoRow label="Address" value={profile.address} icon={MapPin} isEditing={isEditing} onChange={v => setFormData({ ...formData, address: v })} />
+                                        <InfoRow label="Address" value={profile.address} icon={MapPin} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, address: v })} />
                                     </div>
                                 </div>
                             </div>
@@ -467,7 +465,7 @@ export default function ProfilePage() {
                                 renderItem={(item: Membership) => (
                                     <div className="flex justify-between items-center">
                                         <h4 className="font-bold text-slate-800">{item.organization}</h4>
-                                        <p className="text-sm text-slate-600">{item.role} <span className="text-slate-400">•</span> Since {item.year}</p>
+                                        <p className="text-sm text-slate-600">Since {item.year}</p>
                                     </div>
                                 )}
                             />
@@ -480,11 +478,15 @@ export default function ProfilePage() {
                                 <h3 className="text-lg font-bold text-slate-800 mb-6">Student Interaction</h3>
                                 <div className="space-y-4">
                                     <InfoRow label="Timetable Link" value={formData.student_interaction?.timetable_link} icon={Calendar} isEditing={isEditing}
-                                        onChange={v => setFormData({ ...formData, student_interaction: { ...formData.student_interaction, timetable_link: v } })}
+                                        onChange={(v: string) => setFormData({ ...formData, student_interaction: { ...formData.student_interaction, timetable_link: v } })}
                                         isLink
                                     />
                                     <InfoRow label="Mentorship Batch" value={formData.student_interaction?.mentorship_batch} icon={Users} isEditing={isEditing}
-                                        onChange={v => setFormData({ ...formData, student_interaction: { ...formData.student_interaction, mentorship_batch: v } })}
+                                        onChange={(v: string) => setFormData({ ...formData, student_interaction: { ...formData.student_interaction, mentorship_batch: v } })}
+                                    />
+                                    <InfoRow label="Feedback Link" value={formData.student_interaction?.feedback_link} icon={FileText} isEditing={isEditing}
+                                        onChange={(v: string) => setFormData({ ...formData, student_interaction: { ...formData.student_interaction, feedback_link: v } })}
+                                        isLink
                                     />
                                 </div>
                             </div>
