@@ -49,3 +49,19 @@
  POST /admin 200 in 290ms (compile: 4ms, proxy.ts: 4ms, render: 282ms)
  GET /admin 200 in 282ms (compile: 10ms, proxy.ts: 17ms, render: 256ms)
  POST /admin 200 in 449ms (compile: 6ms, proxy.ts: 7ms, render: 436ms)
+   Reload env: .env.local
+ ✓ Compiled in 1473ms
+ GET /admin 200 in 305ms (compile: 159ms, proxy.ts: 96ms, render: 49ms)
+ GET /admin 200 in 53ms (compile: 14ms, proxy.ts: 7ms, render: 33ms)
+ GET /admin 200 in 25ms (compile: 7ms, proxy.ts: 2ms, render: 15ms)
+ POST /admin 200 in 668ms (compile: 14ms, proxy.ts: 6ms, render: 648ms)
+ GET /login 200 in 67ms (compile: 46ms, proxy.ts: 4ms, render: 16ms)
+ GET / 200 in 129ms (compile: 103ms, proxy.ts: 7ms, render: 19ms)
+ GET / 200 in 226ms (compile: 13ms, proxy.ts: 7ms, render: 206ms)
+ POST / 200 in 1176ms (compile: 27ms, proxy.ts: 7ms, render: 1141ms)
+ ✓ Compiled in 210ms
+ GET / 200 in 832ms (compile: 747ms, proxy.ts: 16ms, render: 69ms)
+ GET / 200 in 50ms (compile: 20ms, proxy.ts: 8ms, render: 23ms)
+   Reload env: .env.local
+ ✓ Compiled in 167ms
+ ✓ Compiled in 179ms
