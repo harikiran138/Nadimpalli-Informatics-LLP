@@ -678,15 +678,47 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
                                             "{viewingEmployee.profile?.teaching_philosophy || "No philosophy statement added."}"
                                         </p>
                                     </div>
+
+                                    {/* Identity Section */}
+                                    <div className="p-6 rounded-[2rem] bg-white/60 border border-white shadow-sm space-y-4">
+                                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Identity Verification</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <InfoRow label="Aadhar" value={viewingEmployee.profile?.aadhar_number} icon={<FileText className="w-4 h-4 text-slate-500" />} />
+                                            <InfoRow label="PAN" value={viewingEmployee.profile?.pan_number} icon={<FileText className="w-4 h-4 text-slate-500" />} />
+                                            <InfoRow label="APAAR ID" value={viewingEmployee.profile?.apaar_id} icon={<FileText className="w-4 h-4 text-slate-500" />} />
+                                            <InfoRow label="Blood Group" value={viewingEmployee.profile?.blood_group} icon={<Activity className="w-4 h-4 text-red-500" />} />
+                                            <InfoRow label="Gender" value={viewingEmployee.profile?.gender} icon={<User className="w-4 h-4 text-blue-500" />} />
+                                            <InfoRow label="DOB" value={viewingEmployee.profile?.dob} icon={<Calendar className="w-4 h-4 text-purple-500" />} />
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="space-y-6">
                                     <div className="p-6 rounded-[2rem] bg-white border border-white shadow-sm space-y-4">
                                         <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Contact Details</h3>
                                         <InfoRow label="Email" value={viewingEmployee.profile?.email} icon={<Mail className="w-4 h-4 text-blue-500" />} />
+                                        <InfoRow label="Personal Email" value={viewingEmployee.profile?.personal_email} icon={<Mail className="w-4 h-4 text-sky-500" />} />
+                                        <InfoRow label="Official Email" value={viewingEmployee.profile?.official_email} icon={<Mail className="w-4 h-4 text-indigo-500" />} />
                                         <InfoRow label="Phone" value={viewingEmployee.profile?.phone} icon={<Phone className="w-4 h-4 text-emerald-500" />} />
                                         <InfoRow label="Office" value={viewingEmployee.profile?.office_room} icon={<MapPin className="w-4 h-4 text-red-500" />} />
                                         <InfoRow label="Availability" value={viewingEmployee.profile?.availability} icon={<Clock className="w-4 h-4 text-amber-500" />} />
                                     </div>
+
+                                    {/* Address Section */}
+                                    <div className="p-6 rounded-[2rem] bg-white border border-white shadow-sm space-y-4">
+                                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Addresses</h3>
+                                        <div className="space-y-3">
+                                            <div>
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Communication Address</p>
+                                                <p className="text-sm font-medium text-slate-700">{viewingEmployee.profile?.communication_address || viewingEmployee.profile?.address || "N/A"}</p>
+                                            </div>
+                                            <div className="h-px bg-slate-100" />
+                                            <div>
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Permanent Address</p>
+                                                <p className="text-sm font-medium text-slate-700">{viewingEmployee.profile?.permanent_address || "N/A"}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="p-5 rounded-[2rem] bg-blue-50/50 border border-blue-100 text-center">
                                             <div className="text-3xl font-black text-blue-600 mb-1">{viewingEmployee.profile?.experience_years || 0}</div>
@@ -695,6 +727,18 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
                                         <div className="p-5 rounded-[2rem] bg-purple-50/50 border border-purple-100 text-center">
                                             <div className="text-3xl font-black text-purple-600 mb-1">{viewingEmployee.profile?.publications?.length || 0}</div>
                                             <div className="text-xs font-bold text-slate-500 uppercase">Publications</div>
+                                        </div>
+                                    </div>
+
+                                    {/* Skills Quick View */}
+                                    <div className="p-6 rounded-[2rem] bg-emerald-50/50 border border-emerald-100 shadow-sm">
+                                        <h3 className="text-sm font-black text-emerald-500 uppercase tracking-widest mb-3">Skills</h3>
+                                        <div className="flex flex-wrap gap-2">
+                                            {viewingEmployee.profile?.skills ? viewingEmployee.profile.skills.split(',').map((skill, i) => (
+                                                <span key={i} className="px-2 py-1 bg-white rounded-lg text-[10px] font-bold text-slate-600 border border-emerald-100 shadow-sm">
+                                                    {skill.trim()}
+                                                </span>
+                                            )) : <span className="text-slate-400 italic text-sm">No skills added</span>}
                                         </div>
                                     </div>
                                 </div>

@@ -75,15 +75,15 @@ export function Services() {
                                 {services.map((service) => (
                                     <div
                                         key={service.id}
-                                        onClick={() => setActiveService(service)}
+                                        onMouseEnter={() => setActiveService(service)}
                                         className={`group flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-300 border ${activeService.id === service.id
-                                                ? "bg-white/20 border-white/30 shadow-sm"
-                                                : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
+                                            ? "bg-white/20 border-white/30 shadow-sm"
+                                            : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
                                             }`}
                                     >
                                         <div className={`w-12 h-12 rounded-full flex items-center justify-center border border-white/10 transition-transform duration-300 ${activeService.id === service.id
-                                                ? "scale-110 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20"
-                                                : "bg-white/5 group-hover:scale-110"
+                                            ? "scale-110 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20"
+                                            : "bg-white/5 group-hover:scale-110"
                                             }`}>
                                             <span className={`font-mono text-sm font-bold ${activeService.id === service.id ? "text-violet-600" : "text-slate-500 group-hover:text-slate-700"
                                                 }`}>
@@ -97,8 +97,8 @@ export function Services() {
                                             </p>
                                         </div>
                                         <ArrowRight className={`w-4 h-4 ml-auto transition-all duration-300 ${activeService.id === service.id
-                                                ? "text-violet-600 translate-x-0 opacity-100"
-                                                : "text-slate-400 -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+                                            ? "text-violet-600 translate-x-0 opacity-100"
+                                            : "text-slate-400 -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
                                             }`} />
                                     </div>
                                 ))}
@@ -124,7 +124,6 @@ export function Services() {
                                             <span className={`text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b ${activeService.color} opacity-10 select-none absolute -top-10 -left-6`}>
                                                 {activeService.id}
                                             </span>
-                                            <div className="w-16 h-1 rounded-full bg-slate-900/10 mb-6" />
                                         </div>
 
                                         <h3 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6 leading-tight">
