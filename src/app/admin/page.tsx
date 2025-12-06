@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, User, Activity, Shield, LogOut, Search, Plus, Save, X, Trash2, Edit2, CheckCircle, AlertCircle, Eye, FileText, Phone, Mail, Briefcase, GraduationCap, Award, Calendar, BookOpen, LayoutGrid, List, MapPin, Clock } from "lucide-react";
+import { Users, User, Activity, Shield, LogOut, Search, Plus, Save, X, Trash2, Edit2, CheckCircle, AlertCircle, Eye, FileText, Phone, Mail, Briefcase, GraduationCap, Award, Calendar, BookOpen, LayoutGrid, List, MapPin, Clock, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -621,13 +621,15 @@ export default function AdminDashboard() {
 }
 
 function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
-    const [activeTab, setActiveTab] = useState<"overview" | "timeline" | "research" | "more">("overview");
+    const [activeTab, setActiveTab] = useState<"identity" | "academic" | "research" | "skills" | "memberships" | "student">("identity");
 
     const tabs = [
-        { id: "overview", label: "Overview", icon: <User className="w-4 h-4" /> },
-        { id: "timeline", label: "Timeline", icon: <Briefcase className="w-4 h-4" /> },
-        { id: "research", label: "Research", icon: <BookOpen className="w-4 h-4" /> },
-        { id: "more", label: "More Info", icon: <Award className="w-4 h-4" /> },
+        { id: "identity", label: "Identity & Bio", icon: <User className="w-4 h-4" /> },
+        { id: "academic", label: "Academic Info", icon: <GraduationCap className="w-4 h-4" /> },
+        { id: "research", label: "Research & Projects", icon: <BookOpen className="w-4 h-4" /> },
+        { id: "skills", label: "Skills & Expertise", icon: <Activity className="w-4 h-4" /> },
+        { id: "memberships", label: "Memberships & Awards", icon: <Award className="w-4 h-4" /> },
+        { id: "student", label: "Student Corner", icon: <Users className="w-4 h-4" /> },
     ];
 
     return (
@@ -638,7 +640,7 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex items-center gap-2 px-6 py-4 text-sm font-bold transition-all relative ${activeTab === tab.id ? "text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
+                        className={`flex items-center gap-2 px-6 py-4 text-sm font-bold transition-all relative whitespace-nowrap ${activeTab === tab.id ? "text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
                     >
                         {tab.icon}
                         {tab.label}
@@ -663,50 +665,46 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
                         transition={{ duration: 0.2 }}
                         className="space-y-8"
                     >
-                        {activeTab === "overview" && (
+                        {activeTab === "identity" && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-6">
-                                    <div className="p-6 rounded-[2rem] bg-white/60 border border-white max-w-full shadow-sm">
-                                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">About</h3>
+                                    <div className="p-6 rounded-[2rem] bg-indigo-50/50 border border-indigo-100 shadow-sm">
+                                        <h3 className="text-sm font-black text-indigo-400 uppercase tracking-widest mb-4">Professional Bio</h3>
                                         <p className="text-slate-700 leading-relaxed font-medium">
                                             {viewingEmployee.profile?.bio || "No biography available."}
                                         </p>
                                     </div>
-                                    <div className="p-6 rounded-[2rem] bg-indigo-50/50 border border-indigo-100 shadow-sm">
-                                        <h3 className="text-sm font-black text-indigo-400 uppercase tracking-widest mb-4">Teaching Philosophy</h3>
-                                        <p className="text-slate-700 leading-relaxed font-medium italic">
-                                            "{viewingEmployee.profile?.teaching_philosophy || "No philosophy statement added."}"
-                                        </p>
-                                    </div>
-
-                                    {/* Identity Section */}
                                     <div className="p-6 rounded-[2rem] bg-white/60 border border-white shadow-sm space-y-4">
-                                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Identity Verification</h3>
+                                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Personal Details</h3>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <InfoRow label="Aadhar" value={viewingEmployee.profile?.aadhar_number} icon={<FileText className="w-4 h-4 text-slate-500" />} />
-                                            <InfoRow label="PAN" value={viewingEmployee.profile?.pan_number} icon={<FileText className="w-4 h-4 text-slate-500" />} />
-                                            <InfoRow label="APAAR ID" value={viewingEmployee.profile?.apaar_id} icon={<FileText className="w-4 h-4 text-slate-500" />} />
-                                            <InfoRow label="Blood Group" value={viewingEmployee.profile?.blood_group} icon={<Activity className="w-4 h-4 text-red-500" />} />
-                                            <InfoRow label="Gender" value={viewingEmployee.profile?.gender} icon={<User className="w-4 h-4 text-blue-500" />} />
-                                            <InfoRow label="DOB" value={viewingEmployee.profile?.dob} icon={<Calendar className="w-4 h-4 text-purple-500" />} />
+                                            <InfoRow label="First Name" value={viewingEmployee.profile?.first_name} />
+                                            <InfoRow label="Middle Name" value={viewingEmployee.profile?.middle_name} />
+                                            <InfoRow label="Last Name" value={viewingEmployee.profile?.last_name} />
+                                            <InfoRow label="Gender" value={viewingEmployee.profile?.gender} />
+                                            <InfoRow label="DOB" value={viewingEmployee.profile?.dob} />
+                                            <InfoRow label="Blood Group" value={viewingEmployee.profile?.blood_group} />
                                         </div>
                                     </div>
                                 </div>
                                 <div className="space-y-6">
                                     <div className="p-6 rounded-[2rem] bg-white border border-white shadow-sm space-y-4">
-                                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Contact Details</h3>
-                                        <InfoRow label="Email" value={viewingEmployee.profile?.email} icon={<Mail className="w-4 h-4 text-blue-500" />} />
-                                        <InfoRow label="Personal Email" value={viewingEmployee.profile?.personal_email} icon={<Mail className="w-4 h-4 text-sky-500" />} />
-                                        <InfoRow label="Official Email" value={viewingEmployee.profile?.official_email} icon={<Mail className="w-4 h-4 text-indigo-500" />} />
+                                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Contact Information</h3>
                                         <InfoRow label="Phone" value={viewingEmployee.profile?.phone} icon={<Phone className="w-4 h-4 text-emerald-500" />} />
-                                        <InfoRow label="Office" value={viewingEmployee.profile?.office_room} icon={<MapPin className="w-4 h-4 text-red-500" />} />
-                                        <InfoRow label="Availability" value={viewingEmployee.profile?.availability} icon={<Clock className="w-4 h-4 text-amber-500" />} />
+                                        <InfoRow label="Office Email" value={viewingEmployee.profile?.official_email} icon={<Mail className="w-4 h-4 text-indigo-500" />} />
+                                        <InfoRow label="Personal Email" value={viewingEmployee.profile?.personal_email} icon={<Mail className="w-4 h-4 text-sky-500" />} />
+                                        <InfoRow label="Legacy Email" value={viewingEmployee.profile?.email} icon={<Mail className="w-4 h-4 text-slate-500" />} />
                                     </div>
-
-                                    {/* Address Section */}
+                                    <div className="p-6 rounded-[2rem] bg-white border border-white shadow-sm space-y-4">
+                                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Government IDs</h3>
+                                        <div className="grid grid-cols-1 gap-3">
+                                            <InfoRow label="Aadhar Number" value={viewingEmployee.profile?.aadhar_number} icon={<Shield className="w-4 h-4 text-orange-500" />} />
+                                            <InfoRow label="PAN Number" value={viewingEmployee.profile?.pan_number} icon={<CreditCard className="w-4 h-4 text-blue-500" />} />
+                                            <InfoRow label="APAAR ID" value={viewingEmployee.profile?.apaar_id} icon={<FileText className="w-4 h-4 text-purple-500" />} />
+                                        </div>
+                                    </div>
                                     <div className="p-6 rounded-[2rem] bg-white border border-white shadow-sm space-y-4">
                                         <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Addresses</h3>
-                                        <div className="space-y-3">
+                                        <div className="space-y-4">
                                             <div>
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Communication Address</p>
                                                 <p className="text-sm font-medium text-slate-700">{viewingEmployee.profile?.communication_address || viewingEmployee.profile?.address || "N/A"}</p>
@@ -718,55 +716,55 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="p-5 rounded-[2rem] bg-blue-50/50 border border-blue-100 text-center">
-                                            <div className="text-3xl font-black text-blue-600 mb-1">{viewingEmployee.profile?.experience_years || 0}</div>
-                                            <div className="text-xs font-bold text-slate-500 uppercase">Years Exp.</div>
-                                        </div>
-                                        <div className="p-5 rounded-[2rem] bg-purple-50/50 border border-purple-100 text-center">
-                                            <div className="text-3xl font-black text-purple-600 mb-1">{viewingEmployee.profile?.publications?.length || 0}</div>
-                                            <div className="text-xs font-bold text-slate-500 uppercase">Publications</div>
-                                        </div>
-                                    </div>
-
-                                    {/* Skills Quick View */}
-                                    <div className="p-6 rounded-[2rem] bg-emerald-50/50 border border-emerald-100 shadow-sm">
-                                        <h3 className="text-sm font-black text-emerald-500 uppercase tracking-widest mb-3">Skills</h3>
-                                        <div className="flex flex-wrap gap-2">
-                                            {viewingEmployee.profile?.skills ? viewingEmployee.profile.skills.split(',').map((skill, i) => (
-                                                <span key={i} className="px-2 py-1 bg-white rounded-lg text-[10px] font-bold text-slate-600 border border-emerald-100 shadow-sm">
-                                                    {skill.trim()}
-                                                </span>
-                                            )) : <span className="text-slate-400 italic text-sm">No skills added</span>}
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         )}
 
-                        {activeTab === "timeline" && (
+                        {activeTab === "academic" && (
                             <div className="space-y-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="p-6 rounded-[2rem] bg-white border border-white shadow-sm">
+                                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Core Info</h3>
+                                        <div className="space-y-3">
+                                            <InfoRow label="Designation" value={viewingEmployee.profile?.designation} />
+                                            <InfoRow label="Department/Program" value={viewingEmployee.profile?.program} />
+                                            <InfoRow label="Date of Joining" value={viewingEmployee.profile?.doj} />
+                                            <InfoRow label="Date of Retirement" value={viewingEmployee.profile?.dor} />
+                                            <InfoRow label="Office Room" value={viewingEmployee.profile?.office_room} />
+                                            <InfoRow label="Availability" value={viewingEmployee.profile?.availability} />
+                                        </div>
+                                    </div>
+                                    <div className="p-6 rounded-[2rem] bg-blue-50/50 border border-blue-100 shadow-sm">
+                                        <h3 className="text-sm font-black text-blue-400 uppercase tracking-widest mb-4">Teaching Philosophy</h3>
+                                        <p className="text-slate-700 italic font-medium">"{viewingEmployee.profile?.teaching_philosophy || "No philosophy statement."}"</p>
+                                    </div>
+                                </div>
+
                                 <section>
                                     <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-4">
-                                        <GraduationCap className="w-5 h-5 text-blue-500" /> Education
+                                        <GraduationCap className="w-5 h-5 text-blue-500" /> Education History
                                     </h3>
-                                    <div className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {viewingEmployee.profile?.education?.length ? (
                                             viewingEmployee.profile.education.map((edu, i) => (
                                                 <div key={i} className="p-5 rounded-2xl bg-white/50 border border-white hover:bg-white transition-colors shadow-sm">
                                                     <div className="flex justify-between items-start">
                                                         <div>
-                                                            <h4 className="font-bold text-slate-800">{edu.degree} {edu.specialization && <span className="text-slate-500 font-medium">- {edu.specialization}</span>}</h4>
+                                                            <h4 className="font-bold text-slate-800">{edu.degree}</h4>
                                                             <p className="text-sm text-slate-600 font-medium">{edu.institution}</p>
+                                                            {edu.specialization && <p className="text-xs text-slate-500 mt-1">Spec: {edu.specialization}</p>}
                                                         </div>
-                                                        <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold">{edu.year}</span>
+                                                        <div className="text-right">
+                                                            <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold block mb-1">{edu.year}</span>
+                                                            {edu.grade && <span className="text-xs font-bold text-emerald-600">Grade: {edu.grade}</span>}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))
-                                        ) : <div className="text-slate-400 italic font-medium px-4">No education details added.</div>}
+                                        ) : <div className="text-slate-400 italic px-4">No education records.</div>}
                                     </div>
                                 </section>
+
                                 <section>
                                     <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-4">
                                         <Briefcase className="w-5 h-5 text-emerald-500" /> Professional Experience
@@ -779,12 +777,28 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
                                                         <div>
                                                             <h4 className="font-bold text-slate-800">{exp.role}</h4>
                                                             <p className="text-sm text-slate-600 font-medium">{exp.institution}</p>
+                                                            {exp.responsibilities && <p className="text-xs text-slate-500 mt-2 max-w-xl">{exp.responsibilities}</p>}
                                                         </div>
-                                                        <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-bold">{exp.duration}</span>
+                                                        <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-bold whitespace-nowrap">{exp.duration}</span>
                                                     </div>
                                                 </div>
                                             ))
-                                        ) : <div className="text-slate-400 italic font-medium px-4">No experience details added.</div>}
+                                        ) : <div className="text-slate-400 italic px-4">No teaching experience records.</div>}
+                                    </div>
+                                </section>
+                                <section>
+                                    <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-4">
+                                        <Shield className="w-5 h-5 text-purple-500" /> Component Authority / Admin Experience
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {viewingEmployee.profile?.experience_admin?.length ? (
+                                            viewingEmployee.profile.experience_admin.map((exp, i) => (
+                                                <div key={i} className="p-5 rounded-2xl bg-white/50 border border-white hover:bg-white transition-colors shadow-sm">
+                                                    <h4 className="font-bold text-slate-800">{exp.role}</h4>
+                                                    <p className="text-sm text-slate-600 font-medium mt-1">{exp.description}</p>
+                                                </div>
+                                            ))
+                                        ) : <div className="text-slate-400 italic px-4">No administrative experience records.</div>}
                                     </div>
                                 </section>
                             </div>
@@ -802,19 +816,25 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
                                                 <div key={i} className="p-5 rounded-2xl bg-white/50 border border-white hover:bg-white transition-colors shadow-sm">
                                                     <div className="flex gap-4">
                                                         <span className="text-2xl opacity-20 font-black text-slate-400">{(i + 1).toString().padStart(2, '0')}</span>
-                                                        <div>
+                                                        <div className="flex-1">
                                                             <h4 className="font-bold text-slate-800 leading-snug">{pub.title}</h4>
-                                                            <p className="text-sm text-slate-600 mt-1 font-medium italic">{pub.journal_name} • {pub.year_of_publication}</p>
+                                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                                <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase rounded">{pub.journal_name}</span>
+                                                                <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase rounded">{pub.year_of_publication}</span>
+                                                                <span className="px-2 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold uppercase rounded">{pub.indexing}</span>
+                                                                <span className="px-2 py-1 bg-purple-50 text-purple-600 text-[10px] font-bold uppercase rounded">{pub.quartile}</span>
+                                                            </div>
+                                                            {pub.doi_link && <a href={pub.doi_link} target="_blank" className="text-xs text-blue-500 hover:underline mt-2 inline-block">DOI Link</a>}
                                                         </div>
                                                     </div>
                                                 </div>
                                             ))
-                                        ) : <div className="text-slate-400 italic font-medium px-4">No publications listed.</div>}
+                                        ) : <div className="text-slate-400 italic px-4">No publications listed.</div>}
                                     </div>
                                 </section>
                                 <section>
                                     <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-4">
-                                        <LayoutGrid className="w-5 h-5 text-indigo-500" /> Projects
+                                        <LayoutGrid className="w-5 h-5 text-indigo-500" /> Research Projects
                                     </h3>
                                     <div className="grid grid-cols-1 gap-4">
                                         {viewingEmployee.profile?.projects?.length ? (
@@ -825,51 +845,161 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
                                                     <div className="mt-3 flex gap-2">
                                                         <span className="px-2 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase rounded">{proj.year}</span>
                                                         {proj.amount && <span className="px-2 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase rounded">{proj.amount}</span>}
+                                                        {proj.agency && <span className="px-2 py-1 bg-amber-50 text-amber-600 text-[10px] font-bold uppercase rounded">{proj.agency}</span>}
+                                                        {proj.outcome && <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase rounded">{proj.outcome}</span>}
                                                     </div>
                                                 </div>
                                             ))
-                                        ) : <div className="text-slate-400 italic font-medium px-4">No projects listed.</div>}
+                                        ) : <div className="text-slate-400 italic px-4">No projects listed.</div>}
+                                    </div>
+                                </section>
+                                <section>
+                                    <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-4">
+                                        <Calendar className="w-5 h-5 text-pink-500" /> Events (Attended/Organized)
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {viewingEmployee.profile?.events?.length ? (
+                                            viewingEmployee.profile.events.map((evt, i) => (
+                                                <div key={i} className="p-4 rounded-xl bg-pink-50/30 border border-pink-100 flex justify-between items-center">
+                                                    <div>
+                                                        <span className="font-bold text-slate-800 text-sm block">{evt.title}</span>
+                                                        <span className="text-xs text-slate-500">{evt.location}</span>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="text-xs font-bold text-pink-600 bg-white px-2 py-1 rounded shadow-sm block mb-1">{evt.type}</span>
+                                                        <span className="text-[10px] text-slate-400 font-medium">{evt.date}</span>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : <div className="text-slate-400 italic px-4">No events listed.</div>}
                                     </div>
                                 </section>
                             </div>
                         )}
 
-                        {activeTab === "more" && (
+                        {activeTab === "skills" && (
                             <div className="space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <section>
-                                        <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-4">
-                                            <Award className="w-5 h-5 text-amber-500" /> Awards
-                                        </h3>
-                                        <div className="space-y-3">
-                                            {viewingEmployee.profile?.awards?.length ? (
-                                                viewingEmployee.profile.awards.map((award, i) => (
-                                                    <div key={i} className="p-4 rounded-xl bg-amber-50/50 border border-amber-100 flex justify-between items-center">
-                                                        <span className="font-bold text-slate-800 text-sm">{award.title}</span>
-                                                        <span className="text-xs font-bold text-amber-600 bg-white px-2 py-1 rounded shadow-sm">{award.year}</span>
-                                                    </div>
-                                                ))
-                                            ) : <div className="text-slate-400 italic font-medium px-4">No awards listed.</div>}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="p-6 rounded-[2rem] bg-emerald-50/50 border border-emerald-100 shadow-sm">
+                                        <h3 className="text-sm font-black text-emerald-500 uppercase tracking-widest mb-3">Technical Skills</h3>
+                                        <div className="flex flex-wrap gap-2">
+                                            {viewingEmployee.profile?.skills ? viewingEmployee.profile.skills.split(',').map((skill, i) => (
+                                                <span key={i} className="px-3 py-1.5 bg-white rounded-xl text-xs font-bold text-slate-600 border border-emerald-100 shadow-sm">
+                                                    {skill.trim()}
+                                                </span>
+                                            )) : <span className="text-slate-400 italic text-sm">No skills added</span>}
                                         </div>
-                                    </section>
-                                    <section>
-                                        <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-4">
-                                            <Users className="w-5 h-5 text-cyan-500" /> Memberships
-                                        </h3>
-                                        <div className="space-y-3">
-                                            {viewingEmployee.profile?.memberships?.length ? (
-                                                viewingEmployee.profile.memberships.map((mem, i) => (
-                                                    <div key={i} className="p-4 rounded-xl bg-cyan-50/50 border border-cyan-100 flex justify-between items-center">
-                                                        <span className="font-bold text-slate-800 text-sm">{mem.organization}</span>
-                                                        <span className="text-xs font-bold text-cyan-600 bg-white px-2 py-1 rounded shadow-sm">{mem.year}</span>
-                                                    </div>
-                                                ))
-                                            ) : <div className="text-slate-400 italic font-medium px-4">No memberships listed.</div>}
+                                    </div>
+                                    <div className="p-6 rounded-[2rem] bg-sky-50/50 border border-sky-100 shadow-sm">
+                                        <h3 className="text-sm font-black text-sky-500 uppercase tracking-widest mb-3">Subjects Taught</h3>
+                                        <div className="flex flex-wrap gap-2">
+                                            {viewingEmployee.profile?.subjects?.length ? viewingEmployee.profile.subjects.map((sub, i) => (
+                                                <span key={i} className="px-3 py-1.5 bg-white rounded-xl text-xs font-bold text-slate-600 border border-sky-100 shadow-sm">
+                                                    {sub}
+                                                </span>
+                                            )) : <span className="text-slate-400 italic text-sm">No subjects listed</span>}
                                         </div>
-                                    </section>
+                                    </div>
+                                </div>
+                                <div className="p-6 rounded-[2rem] bg-white border border-white shadow-sm">
+                                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Experience Overview</h3>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="p-4 bg-slate-50 rounded-2xl text-center">
+                                            <div className="text-2xl font-black text-slate-800">{viewingEmployee.profile?.experience_years || 0}</div>
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase">Total Years</div>
+                                        </div>
+                                        <div className="p-4 bg-slate-50 rounded-2xl text-center">
+                                            <div className="text-2xl font-black text-slate-800">{viewingEmployee.profile?.teaching_experience_years || 0}</div>
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase">Teaching</div>
+                                        </div>
+                                        <div className="p-4 bg-slate-50 rounded-2xl text-center">
+                                            <div className="text-2xl font-black text-slate-800">{viewingEmployee.profile?.post_mtech_experience || 0}</div>
+                                            <div className="text-[10px] font-bold text-slate-400 uppercase">Post M.Tech</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
+
+                        {activeTab === "memberships" && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <section>
+                                    <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-4">
+                                        <Award className="w-5 h-5 text-amber-500" /> Awards & Recognitions
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {viewingEmployee.profile?.awards?.length ? (
+                                            viewingEmployee.profile.awards.map((award, i) => (
+                                                <div key={i} className="p-5 rounded-2xl bg-amber-50/50 border border-amber-100 flex justify-between items-center hover:bg-amber-50 transition-colors">
+                                                    <div>
+                                                        <span className="font-bold text-slate-800 text-sm block">{award.title}</span>
+                                                        <span className="text-xs text-slate-500 font-medium">{award.issuer}</span>
+                                                    </div>
+                                                    <span className="text-xs font-bold text-amber-600 bg-white px-3 py-1 rounded-lg shadow-sm">{award.year}</span>
+                                                </div>
+                                            ))
+                                        ) : <div className="text-slate-400 italic px-4">No awards listed.</div>}
+                                    </div>
+                                </section>
+                                <section>
+                                    <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-4">
+                                        <Users className="w-5 h-5 text-cyan-500" /> Professional Memberships
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {viewingEmployee.profile?.memberships?.length ? (
+                                            viewingEmployee.profile.memberships.map((mem, i) => (
+                                                <div key={i} className="p-5 rounded-2xl bg-cyan-50/50 border border-cyan-100 flex justify-between items-center hover:bg-cyan-50 transition-colors">
+                                                    <div>
+                                                        <span className="font-bold text-slate-800 text-sm block">{mem.organization}</span>
+                                                        <span className="text-xs text-slate-500 font-medium">{mem.type}</span>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        {mem.id && <span className="text-[10px] text-slate-400 block mb-1">ID: {mem.id}</span>}
+                                                        <span className="text-xs font-bold text-cyan-600 bg-white px-3 py-1 rounded-lg shadow-sm">{mem.year}</span>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : <div className="text-slate-400 italic px-4">No memberships listed.</div>}
+                                    </div>
+                                </section>
+                            </div>
+                        )}
+
+                        {activeTab === "student" && (
+                            <div className="space-y-8">
+                                <div className="p-6 rounded-[2rem] bg-indigo-50/50 border border-indigo-100 shadow-sm relative overflow-hidden">
+                                    <div className="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+                                    <h3 className="flex items-center gap-2 text-lg font-black text-slate-800 mb-6 relative z-10">
+                                        <Users className="w-5 h-5 text-indigo-600" /> Student Interactions
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                                        <div className="p-5 bg-white rounded-2xl border border-indigo-100 shadow-sm">
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Mentorship Batch</p>
+                                            <p className="text-lg font-bold text-slate-800">{viewingEmployee.profile?.student_interaction?.mentorship_batch || "Not assigned"}</p>
+                                        </div>
+                                        <div className="p-5 bg-white rounded-2xl border border-indigo-100 shadow-sm">
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Availability</p>
+                                            <p className="text-lg font-bold text-slate-800">{viewingEmployee.profile?.availability || "Not specified"}</p>
+                                        </div>
+                                        <div className="p-5 bg-white rounded-2xl border border-indigo-100 shadow-sm flex items-center justify-between group cursor-pointer hover:border-indigo-300 transition-colors">
+                                            <div>
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Time Table</p>
+                                                <p className="text-sm font-bold text-indigo-600 group-hover:underline">View Schedule Document</p>
+                                            </div>
+                                            <BookOpen className="w-5 h-5 text-indigo-300 group-hover:text-indigo-600 transition-colors" />
+                                        </div>
+                                        <div className="p-5 bg-white rounded-2xl border border-indigo-100 shadow-sm flex items-center justify-between group cursor-pointer hover:border-indigo-300 transition-colors">
+                                            <div>
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Student Feedback</p>
+                                                <p className="text-sm font-bold text-indigo-600 group-hover:underline">View Feedback Reports</p>
+                                            </div>
+                                            <Activity className="w-5 h-5 text-indigo-300 group-hover:text-indigo-600 transition-colors" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                     </motion.div>
                 </AnimatePresence>
             </div>

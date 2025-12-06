@@ -139,7 +139,7 @@ export function Services() {
                                     <div className={`absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-b ${activeService.color} opacity-10 blur-[80px] rounded-full pointer-events-none translate-x-1/3 -translate-y-1/3`} />
 
                                     <div className="relative z-10">
-                                        <div className="flex items-center gap-4 mb-8">
+                                        <div className="flex items-center gap-4 mb-20"> {/* Increased mb-8 to mb-20 for more gap */}
                                             <span className={`text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b ${activeService.color} opacity-10 select-none absolute -top-10 -left-6`}>
                                                 {activeService.id}
                                             </span>
