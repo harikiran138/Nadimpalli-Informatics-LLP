@@ -54,17 +54,25 @@ export function About() {
                             transition={{ duration: 1.2, ease: "easeOut" }}
                             className="text-5xl md:text-7xl font-bold mb-8 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gray-800 via-gray-500 to-black"
                         >
-                            About Us
+                            Empowering Institutions for the Future
                         </motion.h2>
-                        <motion.p
+                        <motion.div
                             initial={{ opacity: 0 }}
                             whileInView={{ opacity: 1 }}
                             viewport={{ once: true }}
                             transition={{ delay: 0.4, duration: 1.2, ease: "easeOut" }}
-                            className="text-black max-w-3xl mx-auto text-xl md:text-2xl font-medium leading-relaxed"
+                            className="text-slate-800 text-lg md:text-xl font-medium leading-relaxed space-y-6 max-w-4xl mx-auto text-left"
                         >
-                            Built on a foundation of cutting-edge principles designed for the future of education.
-                        </motion.p>
+                            <p>
+                                We are a next-generation education technology and consulting partner committed to transforming institutions into digitally empowered, future-ready campuses. Through our AI-driven governance systems, comprehensive upskilling initiatives, strong industry collaboration, and expert accreditation support, we enable institutions to deliver excellence in academics, operations, and student success.
+                            </p>
+                            <p>
+                                Our solutions are built to elevate every aspect of institutional performance — from administrative efficiency and faculty development to employability outcomes and global recognition. With a focus on innovation, quality, and measurable impact, we ensure that educational organizations stay competitive in a rapidly evolving world.
+                            </p>
+                            <p className="font-bold text-slate-900">
+                                Together, we help institutions unlock their full potential and shape a smarter future for education.
+                            </p>
+                        </motion.div>
                     </div>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -8,14 +8,24 @@ const services = [
     {
         id: "01",
         title: "AI-Driven Institutional Governance Solutions",
-        description: "Smart automation for administrative excellence.",
+        description: "Comprehensive solutions tailored for modern educational institutions.",
+        features: [
+            "Smart automation for administrative excellence",
+            "Data-driven decisions for academic leadership",
+            "Streamlined workflows for efficient governance"
+        ],
         shadow: "hover:shadow-[0_0_20px_rgba(34,211,238,0.3)]",
         color: "from-cyan-400 to-blue-500"
     },
     {
         id: "02",
         title: "Comprehensive Campus Upskilling Programs",
-        description: "Future-ready skills for students and staff.",
+        description: "Empowering your institution with next-generation capabilities.",
+        features: [
+            "Future-ready skills for students and staff",
+            "Industry-aligned learning for growth",
+            "Building digital capabilities for tomorrow"
+        ],
         shadow: "hover:shadow-[0_0_20px_rgba(96,165,250,0.3)]",
         color: "from-blue-400 to-indigo-500"
     },
@@ -152,6 +162,20 @@ export function Services() {
                                         <p className="text-xl text-slate-700 font-medium leading-relaxed mb-10">
                                             {activeService.description}
                                         </p>
+
+                                        {/* Render features list if available */}
+                                        {activeService.features && (
+                                            <ul className="space-y-4 mb-10">
+                                                {activeService.features.map((feature, idx) => (
+                                                    <li key={idx} className="flex items-start gap-3">
+                                                        <div className="w-6 h-6 rounded-full bg-white/50 flex items-center justify-center shrink-0 mt-0.5">
+                                                            <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${activeService.color}`} />
+                                                        </div>
+                                                        <span className="text-lg text-slate-800 font-medium">{feature}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
 
                                         <div className="flex items-center gap-3 text-sm font-bold text-slate-500 uppercase tracking-widest">
                                             <div className="w-8 h-8 rounded-full bg-yellow-500/10 flex items-center justify-center">

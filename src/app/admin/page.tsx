@@ -622,6 +622,32 @@ export default function AdminDashboard() {
 
 function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
     const [activeTab, setActiveTab] = useState<"identity" | "academic" | "research" | "skills" | "memberships" | "student">("identity");
+    const [isEditing, setIsEditing] = useState(false);
+    const [formData, setFormData] = useState<UserProfile>(viewingEmployee.profile || {} as UserProfile);
+
+    // Reset when employee changes
+    useEffect(() => {
+        setFormData(viewingEmployee.profile || {} as UserProfile);
+        setIsEditing(false);
+    }, [viewingEmployee]);
+
+    const handleSave = async () => {
+        try {
+            const { error } = await supabase
+                .from('teacher_profiles')
+                .upsert({
+                    ...formData,
+                    employee_id: viewingEmployee.employee_id, // Ensure ID logic
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'employee_id' }); // Conflict resolution using PK
+
+            if (error) throw error;
+            setIsEditing(false);
+            alert("Profile updated successfully!");
+        } catch (error: any) {
+            alert("Failed to update profile: " + error.message);
+        }
+    };
 
     const tabs = [
         { id: "identity", label: "Identity & Bio", icon: <User className="w-4 h-4" /> },
@@ -634,24 +660,26 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
 
     return (
         <div className="flex-1 flex flex-col min-h-0 relative z-10">
-            {/* Tab Navigation */}
-            <div className="px-8 border-b border-slate-200/60 flex items-center gap-1 overflow-x-auto custom-scrollbar">
-                {tabs.map((tab) => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex items-center gap-2 px-6 py-4 text-sm font-bold transition-all relative whitespace-nowrap ${activeTab === tab.id ? "text-blue-600" : "text-slate-500 hover:text-slate-700"}`}
-                    >
-                        {tab.icon}
-                        {tab.label}
-                        {activeTab === tab.id && (
-                            <motion.div
-                                layoutId="activeTabIndicator"
-                                className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 rounded-t-full"
-                            />
-                        )}
-                    </button>
-                ))}
+            {/* Toolbar */}
+            <div className="px-8 py-2 flex justify-between items-center bg-white/40 border-b border-white/40">
+                <div className="flex items-center gap-1 overflow-x-auto custom-scrollbar flex-1 mr-4">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as any)}
+                            className={`flex items-center gap-2 px-4 py-3 text-sm font-bold transition-all relative whitespace-nowrap rounded-xl hover:bg-white/50 ${activeTab === tab.id ? "text-blue-600 bg-white shadow-sm" : "text-slate-500"}`}
+                        >
+                            {tab.icon}
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
+                <Button
+                    onClick={isEditing ? handleSave : () => setIsEditing(true)}
+                    className={`rounded-xl font-bold px-6 shadow-lg transition-all ${isEditing ? "bg-emerald-500 hover:bg-emerald-600 text-white" : "bg-white text-slate-700 hover:bg-slate-50"}`}
+                >
+                    {isEditing ? <><CheckCircle className="w-4 h-4 mr-2" /> Save Changes</> : <><Edit2 className="w-4 h-4 mr-2" /> Edit Details</>}
+                </Button>
             </div>
 
             {/* Scrollable Body */}
@@ -670,36 +698,59 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
                                 <div className="space-y-6">
                                     <div className="p-6 rounded-[2rem] bg-indigo-50/50 border border-indigo-100 shadow-sm">
                                         <h3 className="text-sm font-black text-indigo-400 uppercase tracking-widest mb-4">Professional Bio</h3>
-                                        <p className="text-slate-700 leading-relaxed font-medium">
-                                            {viewingEmployee.profile?.bio || "No biography available."}
-                                        </p>
+                                        {isEditing ? (
+                                            <textarea
+                                                className="w-full p-3 rounded-xl bg-white/80 border-white/60 text-sm"
+                                                rows={4}
+                                                value={formData.bio || ""}
+                                                onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                                            />
+                                        ) : (
+                                            <p className="text-slate-700 leading-relaxed font-medium">
+                                                {formData.bio || "No biography available."}
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="p-6 rounded-[2rem] bg-white/60 border border-white shadow-sm space-y-4">
                                         <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Personal Details</h3>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <InfoRow label="First Name" value={viewingEmployee.profile?.first_name} />
-                                            <InfoRow label="Middle Name" value={viewingEmployee.profile?.middle_name} />
-                                            <InfoRow label="Last Name" value={viewingEmployee.profile?.last_name} />
-                                            <InfoRow label="Gender" value={viewingEmployee.profile?.gender} />
-                                            <InfoRow label="DOB" value={viewingEmployee.profile?.dob} />
-                                            <InfoRow label="Blood Group" value={viewingEmployee.profile?.blood_group} />
+                                            <InfoRow label="First Name" value={formData.first_name} isEditing={isEditing} onChange={v => setFormData({ ...formData, first_name: v })} />
+                                            <InfoRow label="Middle Name" value={formData.middle_name} isEditing={isEditing} onChange={v => setFormData({ ...formData, middle_name: v })} />
+                                            <InfoRow label="Last Name" value={formData.last_name} isEditing={isEditing} onChange={v => setFormData({ ...formData, last_name: v })} />
+                                            <InfoRow
+                                                label="Gender"
+                                                value={formData.gender}
+                                                isEditing={isEditing}
+                                                onChange={v => setFormData({ ...formData, gender: v })}
+                                                type="select"
+                                                options={["Male", "Female", "Other"]}
+                                            />
+                                            <InfoRow label="DOB" value={formData.dob} isEditing={isEditing} onChange={v => setFormData({ ...formData, dob: v })} />
+                                            <InfoRow
+                                                label="Blood Group"
+                                                value={formData.blood_group}
+                                                isEditing={isEditing}
+                                                onChange={v => setFormData({ ...formData, blood_group: v })}
+                                                type="select"
+                                                options={["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]}
+                                            />
                                         </div>
                                     </div>
                                 </div>
                                 <div className="space-y-6">
                                     <div className="p-6 rounded-[2rem] bg-white border border-white shadow-sm space-y-4">
                                         <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Contact Information</h3>
-                                        <InfoRow label="Phone" value={viewingEmployee.profile?.phone} icon={<Phone className="w-4 h-4 text-emerald-500" />} />
-                                        <InfoRow label="Office Email" value={viewingEmployee.profile?.official_email} icon={<Mail className="w-4 h-4 text-indigo-500" />} />
-                                        <InfoRow label="Personal Email" value={viewingEmployee.profile?.personal_email} icon={<Mail className="w-4 h-4 text-sky-500" />} />
-                                        <InfoRow label="Legacy Email" value={viewingEmployee.profile?.email} icon={<Mail className="w-4 h-4 text-slate-500" />} />
+                                        <InfoRow label="Phone" value={formData.phone} icon={<Phone className="w-4 h-4 text-emerald-500" />} isEditing={isEditing} onChange={v => setFormData({ ...formData, phone: v })} />
+                                        <InfoRow label="Office Email" value={formData.official_email} icon={<Mail className="w-4 h-4 text-indigo-500" />} isEditing={isEditing} onChange={v => setFormData({ ...formData, official_email: v })} />
+                                        <InfoRow label="Personal Email" value={formData.personal_email} icon={<Mail className="w-4 h-4 text-sky-500" />} isEditing={isEditing} onChange={v => setFormData({ ...formData, personal_email: v })} />
+                                        <InfoRow label="Legacy Email" value={formData.email} icon={<Mail className="w-4 h-4 text-slate-500" />} isEditing={isEditing} onChange={v => setFormData({ ...formData, email: v })} />
                                     </div>
                                     <div className="p-6 rounded-[2rem] bg-white border border-white shadow-sm space-y-4">
                                         <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">Government IDs</h3>
                                         <div className="grid grid-cols-1 gap-3">
-                                            <InfoRow label="Aadhar Number" value={viewingEmployee.profile?.aadhar_number} icon={<Shield className="w-4 h-4 text-orange-500" />} />
-                                            <InfoRow label="PAN Number" value={viewingEmployee.profile?.pan_number} icon={<CreditCard className="w-4 h-4 text-blue-500" />} />
-                                            <InfoRow label="APAAR ID" value={viewingEmployee.profile?.apaar_id} icon={<FileText className="w-4 h-4 text-purple-500" />} />
+                                            <InfoRow label="Aadhar Number" value={formData.aadhar_number} icon={<Shield className="w-4 h-4 text-orange-500" />} isEditing={isEditing} onChange={v => setFormData({ ...formData, aadhar_number: v })} />
+                                            <InfoRow label="PAN Number" value={formData.pan_number} icon={<CreditCard className="w-4 h-4 text-blue-500" />} isEditing={isEditing} onChange={v => setFormData({ ...formData, pan_number: v })} />
+                                            <InfoRow label="APAAR ID" value={formData.apaar_id} icon={<FileText className="w-4 h-4 text-purple-500" />} isEditing={isEditing} onChange={v => setFormData({ ...formData, apaar_id: v })} />
                                         </div>
                                     </div>
                                     <div className="p-6 rounded-[2rem] bg-white border border-white shadow-sm space-y-4">
@@ -707,12 +758,16 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
                                         <div className="space-y-4">
                                             <div>
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Communication Address</p>
-                                                <p className="text-sm font-medium text-slate-700">{viewingEmployee.profile?.communication_address || viewingEmployee.profile?.address || "N/A"}</p>
+                                                {isEditing ? (
+                                                    <textarea value={formData.communication_address || ""} onChange={e => setFormData({ ...formData, communication_address: e.target.value })} className="w-full text-sm p-2 bg-slate-50 border rounded-lg" />
+                                                ) : <p className="text-sm font-medium text-slate-700">{formData.communication_address || formData.address || "N/A"}</p>}
                                             </div>
                                             <div className="h-px bg-slate-100" />
                                             <div>
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Permanent Address</p>
-                                                <p className="text-sm font-medium text-slate-700">{viewingEmployee.profile?.permanent_address || "N/A"}</p>
+                                                {isEditing ? (
+                                                    <textarea value={formData.permanent_address || ""} onChange={e => setFormData({ ...formData, permanent_address: e.target.value })} className="w-full text-sm p-2 bg-slate-50 border rounded-lg" />
+                                                ) : <p className="text-sm font-medium text-slate-700">{formData.permanent_address || "N/A"}</p>}
                                             </div>
                                         </div>
                                     </div>
@@ -726,17 +781,19 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
                                     <div className="p-6 rounded-[2rem] bg-white border border-white shadow-sm">
                                         <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Core Info</h3>
                                         <div className="space-y-3">
-                                            <InfoRow label="Designation" value={viewingEmployee.profile?.designation} />
-                                            <InfoRow label="Department/Program" value={viewingEmployee.profile?.program} />
-                                            <InfoRow label="Date of Joining" value={viewingEmployee.profile?.doj} />
-                                            <InfoRow label="Date of Retirement" value={viewingEmployee.profile?.dor} />
-                                            <InfoRow label="Office Room" value={viewingEmployee.profile?.office_room} />
-                                            <InfoRow label="Availability" value={viewingEmployee.profile?.availability} />
+                                            <InfoRow label="Designation" value={formData.designation} isEditing={isEditing} onChange={v => setFormData({ ...formData, designation: v })} type="select" options={["Professor", "Associate Professor", "Assistant Professor", "Staff"]} />
+                                            <InfoRow label="Department/Program" value={formData.program} isEditing={isEditing} onChange={v => setFormData({ ...formData, program: v })} />
+                                            <InfoRow label="Date of Joining" value={formData.doj} isEditing={isEditing} onChange={v => setFormData({ ...formData, doj: v })} />
+                                            <InfoRow label="Date of Retirement" value={formData.dor} isEditing={isEditing} onChange={v => setFormData({ ...formData, dor: v })} />
+                                            <InfoRow label="Office Room" value={formData.office_room} isEditing={isEditing} onChange={v => setFormData({ ...formData, office_room: v })} />
+                                            <InfoRow label="Availability" value={formData.availability} isEditing={isEditing} onChange={v => setFormData({ ...formData, availability: v })} />
                                         </div>
                                     </div>
                                     <div className="p-6 rounded-[2rem] bg-blue-50/50 border border-blue-100 shadow-sm">
                                         <h3 className="text-sm font-black text-blue-400 uppercase tracking-widest mb-4">Teaching Philosophy</h3>
-                                        <p className="text-slate-700 italic font-medium">"{viewingEmployee.profile?.teaching_philosophy || "No philosophy statement."}"</p>
+                                        {isEditing ? (
+                                            <textarea className="w-full p-2 text-sm bg-white" rows={4} value={formData.teaching_philosophy || ""} onChange={e => setFormData({ ...formData, teaching_philosophy: e.target.value })} />
+                                        ) : <p className="text-slate-700 italic font-medium">"{formData.teaching_philosophy || "No philosophy statement."}"</p>}
                                     </div>
                                 </div>
 
@@ -745,8 +802,8 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
                                         <GraduationCap className="w-5 h-5 text-blue-500" /> Education History
                                     </h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {viewingEmployee.profile?.education?.length ? (
-                                            viewingEmployee.profile.education.map((edu, i) => (
+                                        {formData.education?.length ? (
+                                            formData.education.map((edu, i) => (
                                                 <div key={i} className="p-5 rounded-2xl bg-white/50 border border-white hover:bg-white transition-colors shadow-sm">
                                                     <div className="flex justify-between items-start">
                                                         <div>
@@ -770,8 +827,8 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
                                         <Briefcase className="w-5 h-5 text-emerald-500" /> Professional Experience
                                     </h3>
                                     <div className="space-y-4">
-                                        {viewingEmployee.profile?.experience_teaching?.length ? (
-                                            viewingEmployee.profile.experience_teaching.map((exp, i) => (
+                                        {formData.experience_teaching?.length ? (
+                                            formData.experience_teaching.map((exp, i) => (
                                                 <div key={i} className="p-5 rounded-2xl bg-white/50 border border-white hover:bg-white transition-colors shadow-sm">
                                                     <div className="flex justify-between items-start">
                                                         <div>
@@ -791,8 +848,8 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
                                         <Shield className="w-5 h-5 text-purple-500" /> Component Authority / Admin Experience
                                     </h3>
                                     <div className="space-y-4">
-                                        {viewingEmployee.profile?.experience_admin?.length ? (
-                                            viewingEmployee.profile.experience_admin.map((exp, i) => (
+                                        {formData.experience_admin?.length ? (
+                                            formData.experience_admin.map((exp, i) => (
                                                 <div key={i} className="p-5 rounded-2xl bg-white/50 border border-white hover:bg-white transition-colors shadow-sm">
                                                     <h4 className="font-bold text-slate-800">{exp.role}</h4>
                                                     <p className="text-sm text-slate-600 font-medium mt-1">{exp.description}</p>
@@ -1007,20 +1064,52 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
     );
 }
 
-function InfoRow({ label, value, icon }: { label: string, value?: string, icon?: React.ReactNode }) {
-    if (!value) return null;
+
+interface InfoRowProps {
+    label: string;
+    value?: string;
+    icon?: React.ReactNode;
+    isEditing?: boolean;
+    onChange?: (value: string) => void;
+    type?: "text" | "select";
+    options?: string[];
+}
+
+function InfoRow({ label, value, icon, isEditing, onChange, type = "text", options = [] }: InfoRowProps) {
+    if (!value && !isEditing) return null;
+
     return (
         <div className="flex items-center gap-4">
             <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shadow-sm shrink-0">
-                {icon}
+                {icon ? icon : <Activity className="w-4 h-4 text-slate-400" />}
             </div>
-            <div className="min-w-0">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
-                <p className="text-sm font-bold text-slate-800 truncate">{value}</p>
+            <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
+                {isEditing && onChange ? (
+                    type === "select" ? (
+                        <select
+                            value={value || ""}
+                            onChange={e => onChange(e.target.value)}
+                            className="w-full p-2 rounded-lg bg-white border border-slate-200 text-sm font-bold text-slate-700"
+                        >
+                            <option value="">Select...</option>
+                            {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                    ) : (
+                        <Input
+                            value={value || ""}
+                            onChange={e => onChange(e.target.value)}
+                            className="h-8 text-sm font-bold text-slate-800 bg-white"
+                        />
+                    )
+                ) : (
+                    <p className="text-sm font-bold text-slate-800 truncate">{value || "-"}</p>
+                )}
             </div>
         </div>
     );
 }
+
 
 function StatCard({ title, value, icon, color, delay }: { title: string, value: number | string, icon: React.ReactNode, color: string, delay: number }) {
     return (
