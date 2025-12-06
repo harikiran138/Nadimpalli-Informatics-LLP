@@ -65,3 +65,19 @@
    Reload env: .env.local
  ✓ Compiled in 167ms
  ✓ Compiled in 179ms
+ GET / 200 in 1556ms (compile: 229ms, proxy.ts: 52ms, render: 1275ms)
+✅ Email sent successfully! ID: f6cef995-bde3-49da-a8b4-c42fafd7df3d
+ POST / 200 in 2.6s (compile: 16ms, proxy.ts: 9ms, render: 2.6s)
+ GET / 200 in 68ms (compile: 12ms, proxy.ts: 5ms, render: 52ms)
+ GET / 200 in 272ms (compile: 191ms, proxy.ts: 5ms, render: 76ms)
+ GET / 200 in 95ms (compile: 11ms, proxy.ts: 5ms, render: 79ms)
+ GET / 200 in 86ms (compile: 16ms, proxy.ts: 4ms, render: 66ms)
+ GET / 200 in 34ms (compile: 8ms, proxy.ts: 5ms, render: 20ms)
+ GET / 200 in 186ms (compile: 107ms, proxy.ts: 5ms, render: 74ms)
+ GET / 200 in 97ms (compile: 8ms, proxy.ts: 3ms, render: 86ms)
+ GET / 200 in 79ms (compile: 17ms, proxy.ts: 7ms, render: 55ms)
+ GET / 200 in 38ms (compile: 20ms, proxy.ts: 4ms, render: 14ms)
+ GET / 200 in 151ms (compile: 93ms, proxy.ts: 3ms, render: 56ms)
+ GET / 200 in 39ms (compile: 9ms, proxy.ts: 5ms, render: 25ms)
+ GET / 200 in 41ms (compile: 8ms, proxy.ts: 3ms, render: 30ms)
+ GET / 200 in 18ms (compile: 5ms, proxy.ts: 2ms, render: 11ms)

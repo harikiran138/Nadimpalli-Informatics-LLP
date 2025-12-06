@@ -3,7 +3,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend only if API key is available (prevents crashes in deployment)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export async function submitContactForm(formData: FormData) {
     const name = formData.get("name") as string;
@@ -17,8 +18,9 @@ export async function submitContactForm(formData: FormData) {
     // Send Email FIRST - This is the primary delivery method
     let emailSent = false;
     try {
-        if (!process.env.RESEND_API_KEY) {
-            throw new Error("RESEND_API_KEY not configured");
+        if (!process.env.RESEND_API_KEY || !resend) {
+            console.warn("⚠️ RESEND_API_KEY not configured - email notifications disabled");
+            throw new Error("Email service not configured");
         }
 
         const { data, error } = await resend.emails.send({
@@ -89,11 +91,9 @@ Received: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
         emailSent = true;
 
     } catch (emailError: any) {
-        console.error("❌ Critical: Failed to send email notification:", emailError);
-        // If email fails, we should notify the user
-        return {
-            error: "Failed to send your message. Please try again or email us directly at nadimpalliinformatics@gmail.com"
-        };
+        console.error("❌ Email notification failed:", emailError);
+        // Continue to store in database even if email fails
+        emailSent = false;
     }
 
     // Store in database as backup/archive (secondary operation)
@@ -116,9 +116,16 @@ Received: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
         // Email was sent successfully, so we still return success
     }
 
-    return {
-        success: "Message sent successfully! We'll get back to you soon."
-    };
+    // Return success with appropriate message
+    if (emailSent) {
+        return {
+            success: "Message sent successfully! We'll get back to you soon."
+        };
+    } else {
+        return {
+            success: "Message received! Email notifications are currently being configured. We'll review your message in the admin panel."
+        };
+    }
 }
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
