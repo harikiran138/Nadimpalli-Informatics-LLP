@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowRight, Sparkles } from "lucide-react";
 
 const services = [
@@ -37,6 +37,21 @@ const services = [
 
 export function Services() {
     const [activeService, setActiveService] = useState(services[0]);
+    const [isHovering, setIsHovering] = useState(false);
+
+    useEffect(() => {
+        if (isHovering) return;
+
+        const interval = setInterval(() => {
+            setActiveService((prev) => {
+                const currentIndex = services.findIndex((s) => s.id === prev.id);
+                const nextIndex = (currentIndex + 1) % services.length;
+                return services[nextIndex];
+            });
+        }, 5000); // Change every 5 seconds
+
+        return () => clearInterval(interval);
+    }, [isHovering]);
 
     return (
         <section id="services" className="py-32 relative overflow-hidden">
@@ -49,7 +64,11 @@ export function Services() {
 
                     <div className="grid lg:grid-cols-5 gap-12 relative z-10">
                         {/* LEFT: List of Services (Styled like Contact Info) */}
-                        <div className="lg:col-span-2 flex flex-col">
+                        <div
+                            className="lg:col-span-2 flex flex-col"
+                            onMouseEnter={() => setIsHovering(true)}
+                            onMouseLeave={() => setIsHovering(false)}
+                        >
                             <div className="mb-10">
                                 <motion.h2
                                     initial={{ opacity: 0, y: 20 }}
