@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 interface FieldConfig {
     name: string;
     label: string;
-    type?: 'text' | 'textarea' | 'date' | 'select';
+    type?: 'text' | 'textarea' | 'date' | 'select' | 'file';
     placeholder?: string;
     options?: string[]; // for select
     required?: boolean;
@@ -82,6 +82,27 @@ export function ListEditor({ items = [], onUpdate, fields, title, description, e
                                                 value={newItem[field.name] || ''}
                                                 onChange={e => setNewItem({ ...newItem, [field.name]: e.target.value })}
                                                 className="bg-white/80 border-white/60 min-h-[100px]"
+                                            />
+                                        ) : field.type === 'select' ? (
+                                            <div className="relative">
+                                                <select
+                                                    value={newItem[field.name] || ''}
+                                                    onChange={e => setNewItem({ ...newItem, [field.name]: e.target.value })}
+                                                    className="w-full h-10 px-3 rounded-md bg-white/80 border border-white/60 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                                >
+                                                    <option value="">Select {field.label}</option>
+                                                    {field.options?.map(opt => (
+                                                        <option key={opt} value={opt}>{opt}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        ) : field.type === 'file' ? (
+                                            <Input
+                                                type="text"
+                                                placeholder="Paste URL (File upload pending)"
+                                                value={newItem[field.name] || ''}
+                                                onChange={e => setNewItem({ ...newItem, [field.name]: e.target.value })}
+                                                className="bg-white/80 border-white/60 h-10"
                                             />
                                         ) : (
                                             <Input

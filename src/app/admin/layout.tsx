@@ -1,22 +1,14 @@
+import { AuthBackground } from "@/components/ui/AuthBackground";
+
 export default function AdminLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
     return (
-        <div className="relative min-h-screen bg-black text-white overflow-hidden">
-            {/* Background Video */}
-            <div className="fixed inset-0 z-0">
-                <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover"
-                >
-                    <source src="/about-bg-unicorn.webm" type="video/webm" />
-                </video>
-            </div>
+        <div className="relative min-h-screen text-slate-900 overflow-hidden">
+            {/* Background from Login Page */}
+            <AuthBackground />
 
             {/* Content */}
             <div className="relative z-10 h-full">

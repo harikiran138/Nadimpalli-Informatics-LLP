@@ -63,7 +63,7 @@ export default function LoginPage() {
                 .eq('employee_id', employee.employee_id)
                 .maybeSingle();
 
-            if (profile) {
+            if (profile && profile.program) {
                 document.cookie = "employee_session=true; path=/; max-age=86400; SameSite=Lax";
                 router.push("/profile");
             } else {

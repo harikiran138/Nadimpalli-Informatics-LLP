@@ -1,92 +1,150 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { GraduationCap, Fingerprint, BookOpen, BarChart3, ArrowUpRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 const services = [
     {
         id: "01",
-        title: "College ERP",
-        description: "Comprehensive management system for academic institutions.",
+        title: "AI-Driven Institutional Governance Solutions",
+        description: "Smart automation for administrative excellence.",
         shadow: "hover:shadow-[0_0_20px_rgba(34,211,238,0.3)]",
+        color: "from-cyan-400 to-blue-500"
     },
     {
         id: "02",
-        title: "Smart Attendance",
-        description: "Biometric and AI-driven attendance tracking solutions.",
+        title: "Comprehensive Campus Upskilling Programs",
+        description: "Future-ready skills for students and staff.",
         shadow: "hover:shadow-[0_0_20px_rgba(96,165,250,0.3)]",
+        color: "from-blue-400 to-indigo-500"
     },
     {
         id: "03",
-        title: "Library Automation",
-        description: "Digital cataloging and RFID-based inventory management.",
+        title: "Industry-Integrated Teaching & Apprenticeships",
+        description: "Real-world exposure through strong industry ties.",
         shadow: "hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]",
+        color: "from-purple-400 to-fuchsia-500"
     },
     {
         id: "04",
-        title: "AI Analytics",
-        description: "Predictive insights and performance dashboards for admins.",
+        title: "Accreditation & Institutional Ranking Support",
+        description: "Strategy and compliance for top recognition.",
         shadow: "hover:shadow-[0_0_20px_rgba(52,211,153,0.3)]",
+        color: "from-emerald-400 to-teal-500"
     },
 ];
 
 export function Services() {
+    const [activeService, setActiveService] = useState(services[0]);
+
     return (
         <section id="services" className="py-32 relative overflow-hidden">
-            {/* Background Elements */}
-            {/* Background Elements - Removed for unified page background */}
-
             <div className="container mx-auto px-4 relative z-10">
-                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[3rem] p-8 md:p-16 shadow-2xl">
-                    <div className="text-center mb-16">
-                        <motion.h2
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 1.2, ease: "easeOut" }}
-                            className="text-5xl md:text-7xl font-bold mb-8 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gray-800 via-gray-500 to-black"
-                        >
-                            Services
-                        </motion.h2>
-                        <motion.p
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: 0.4, duration: 1.2, ease: "easeOut" }}
-                            className="text-black max-w-3xl mx-auto text-xl md:text-2xl font-medium leading-relaxed"
-                        >
-                            Modular components designed to integrate seamlessly into your existing infrastructure.
-                        </motion.p>
-                    </div>
+                <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {services.map((service, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: index * 0.1 }}
-                                whileHover={{ scale: 1.02 }}
-                                className={`group relative h-80 p-8 rounded-[2rem] bg-white/10 border border-white/20 backdrop-blur-xl hover:bg-white/20 hover:border-white/30 transition-all duration-500 flex flex-col justify-between overflow-hidden shadow-lg`}
-                            >
-                                <div className="relative z-10">
-                                    <span className="text-6xl font-bold transition-opacity duration-500 bg-gradient-to-b from-slate-300 via-slate-600 to-slate-900 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(255,255,255,0.2)]">
-                                        {service.id}
-                                    </span>
-                                </div>
+                    {/* Decorative Background Mesh inside the card */}
+                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-500/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/3 pointer-events-none" />
 
-                                <div className="relative z-10">
-                                    <h3 className="text-2xl font-semibold mb-4 bg-gradient-to-b from-slate-200 via-slate-500 to-slate-800 bg-clip-text text-transparent drop-shadow-[0_1px_2px_rgba(255,255,255,0.1)]">
-                                        {service.title}
-                                    </h3>
+                    <div className="grid lg:grid-cols-5 gap-12 relative z-10">
+                        {/* LEFT: List of Services (Styled like Contact Info) */}
+                        <div className="lg:col-span-2 flex flex-col">
+                            <div className="mb-10">
+                                <motion.h2
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 1.2, ease: "easeOut" }}
+                                    className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gray-800 via-gray-500 to-black"
+                                >
+                                    Our Services
+                                </motion.h2>
+                                <motion.p
+                                    initial={{ opacity: 0 }}
+                                    whileInView={{ opacity: 1 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: 0.4, duration: 1.2, ease: "easeOut" }}
+                                    className="text-black text-lg font-medium leading-relaxed"
+                                >
+                                    Cutting-edge solutions designed to transform your educational infrastructure.
+                                </motion.p>
+                            </div>
 
-                                    <p className="text-black font-medium leading-relaxed drop-shadow-sm">
-                                        {service.description}
-                                    </p>
-                                </div>
-                            </motion.div>
-                        ))}
+                            <div className="space-y-4">
+                                {services.map((service) => (
+                                    <div
+                                        key={service.id}
+                                        onClick={() => setActiveService(service)}
+                                        className={`group flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-300 border ${activeService.id === service.id
+                                                ? "bg-white/20 border-white/30 shadow-sm"
+                                                : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
+                                            }`}
+                                    >
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center border border-white/10 transition-transform duration-300 ${activeService.id === service.id
+                                                ? "scale-110 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20"
+                                                : "bg-white/5 group-hover:scale-110"
+                                            }`}>
+                                            <span className={`font-mono text-sm font-bold ${activeService.id === service.id ? "text-violet-600" : "text-slate-500 group-hover:text-slate-700"
+                                                }`}>
+                                                {service.id}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <p className={`font-medium transition-colors duration-300 ${activeService.id === service.id ? "text-slate-900" : "text-slate-700 group-hover:text-slate-900"
+                                                }`}>
+                                                {service.title}
+                                            </p>
+                                        </div>
+                                        <ArrowRight className={`w-4 h-4 ml-auto transition-all duration-300 ${activeService.id === service.id
+                                                ? "text-violet-600 translate-x-0 opacity-100"
+                                                : "text-slate-400 -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+                                            }`} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* RIGHT: Active Service Detail Card (Styled like Contact Form) */}
+                        <div className="lg:col-span-3">
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={activeService.id}
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    transition={{ duration: 0.4, ease: "easeOut" }}
+                                    className="h-full rounded-[2.5rem] bg-white/40 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.05)] p-8 md:p-12 relative overflow-hidden flex flex-col justify-center"
+                                >
+                                    {/* Subtle internal glow */}
+                                    <div className={`absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-b ${activeService.color} opacity-10 blur-[80px] rounded-full pointer-events-none translate-x-1/3 -translate-y-1/3`} />
+
+                                    <div className="relative z-10">
+                                        <div className="flex items-center gap-4 mb-8">
+                                            <span className={`text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b ${activeService.color} opacity-10 select-none absolute -top-10 -left-6`}>
+                                                {activeService.id}
+                                            </span>
+                                            <div className="w-16 h-1 rounded-full bg-slate-900/10 mb-6" />
+                                        </div>
+
+                                        <h3 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6 leading-tight">
+                                            {activeService.title}
+                                        </h3>
+
+                                        <p className="text-xl text-slate-700 font-medium leading-relaxed mb-10">
+                                            {activeService.description}
+                                        </p>
+
+                                        <div className="flex items-center gap-3 text-sm font-bold text-slate-500 uppercase tracking-widest">
+                                            <div className="w-8 h-8 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                                                <Sparkles className="w-4 h-4 text-yellow-600" />
+                                            </div>
+                                            <span>Premium Solution</span>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
                     </div>
                 </div>
             </div>

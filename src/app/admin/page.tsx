@@ -760,7 +760,7 @@ function TabsContent({ viewingEmployee }: { viewingEmployee: Employee }) {
                                                         <span className="text-2xl opacity-20 font-black text-slate-400">{(i + 1).toString().padStart(2, '0')}</span>
                                                         <div>
                                                             <h4 className="font-bold text-slate-800 leading-snug">{pub.title}</h4>
-                                                            <p className="text-sm text-slate-600 mt-1 font-medium italic">{pub.journal} • {pub.year}</p>
+                                                            <p className="text-sm text-slate-600 mt-1 font-medium italic">{pub.journal_name} • {pub.year_of_publication}</p>
                                                         </div>
                                                     </div>
                                                 </div>

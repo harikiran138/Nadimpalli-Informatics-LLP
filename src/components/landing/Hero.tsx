@@ -2,29 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
-import { useState, useEffect } from "react";
-
-const TypingText = ({ text, className }: { text: string, className?: string }) => {
-    const [displayedText, setDisplayedText] = useState("");
-    const [currentIndex, setCurrentIndex] = useState(0);
-
-    useEffect(() => {
-        if (currentIndex < text.length) {
-            const timeout = setTimeout(() => {
-                setDisplayedText(prev => prev + text[currentIndex]);
-                setCurrentIndex(prev => prev + 1);
-            }, 25); // Typing speed
-            return () => clearTimeout(timeout);
-        }
-    }, [currentIndex, text]);
-
-    return (
-        <span className={className}>
-            {displayedText}
-            <span className="animate-pulse">|</span>
-        </span>
-    );
-};
+// Removed TypingText component in favor of simple motion animation
 
 export function Hero() {
     return (
@@ -44,14 +22,20 @@ export function Hero() {
 
                         <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight min-h-[160px] md:min-h-[240px]">
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-800 via-gray-500 to-black">
-                                <TypingText text="Engineering the Future of Digital Education." />
+                                <motion.span
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 1.2, ease: "easeOut" }}
+                                >
+                                    Engineering the Future of Digital Education.
+                                </motion.span>
                             </span>
                         </h1>
 
                         <motion.p
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            transition={{ delay: 1.2, duration: 0.8 }}
+                            transition={{ delay: 0.8, duration: 0.8 }}
                             className="text-xl md:text-2xl text-slate-600 mb-10 max-w-2xl leading-relaxed font-medium"
                         >
                             We build intelligent, scalable, and secure platforms that empower institutions to thrive in the digital age.

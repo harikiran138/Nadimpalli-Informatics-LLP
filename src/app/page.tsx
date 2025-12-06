@@ -15,9 +15,36 @@ export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.playbackRate = 0.75;
-    }
+    // Robust video playback for Safari with Interaction Fallback
+    const playVideo = async () => {
+      if (videoRef.current) {
+        // Explicitly set muted to true for strict browsers
+        videoRef.current.muted = true;
+        videoRef.current.playbackRate = 0.75;
+        try {
+          await videoRef.current.play();
+        } catch (err) {
+          console.warn("Autoplay prevented by browser. Waiting for user interaction.");
+
+          // Fallback: Play on the first user interaction
+          const enableVideo = () => {
+            if (videoRef.current) {
+              videoRef.current.play().catch(e => console.error("Interaction play failed:", e));
+            }
+            // Remove listeners after first attempt
+            document.removeEventListener('touchstart', enableVideo);
+            document.removeEventListener('click', enableVideo);
+            document.removeEventListener('keydown', enableVideo);
+          };
+
+          document.addEventListener('touchstart', enableVideo);
+          document.addEventListener('click', enableVideo);
+          document.addEventListener('keydown', enableVideo);
+        }
+      }
+    };
+
+    playVideo();
   }, []);
 
   return (
@@ -33,6 +60,7 @@ export default function Home() {
             loop
             muted
             playsInline
+            preload="auto"
             className="w-full h-full object-cover"
           >
             <source src="/hero-video.mp4" type="video/mp4" />

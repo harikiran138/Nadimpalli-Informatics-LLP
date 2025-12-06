@@ -24,7 +24,7 @@ const TABS = [
     { id: "academic", label: "Academic Info", icon: GraduationCap },
     { id: "research", label: "Research & Projects", icon: BookOpen },
     { id: "skills", label: "Skills & Expertise", icon: Monitor },
-    { id: "community", label: "Events & Membership", icon: Users },
+    { id: "community", label: "Memberships & Awards", icon: Users },
     { id: "student", label: "Student Corner", icon: Lightbulb },
 ];
 
@@ -55,13 +55,24 @@ export default function ProfilePage() {
             const { data: emp, error: empError } = await supabase.from('employees').select('*').eq('employee_id', employeeId).single();
             if (empError) throw empError;
 
-            const { data: tp, error: tpError } = await supabase.from('teacher_profiles').select('*').eq('employee_id', employeeId).single();
+            const { data: tp, error: tpError } = await supabase.from('teacher_profiles').select('*').eq('employee_id', employeeId).maybeSingle();
+
+            if (!tp || !tp.program) {
+                // If no profile exists or is incomplete, redirect to onboarding
+                router.push("/onboarding");
+                return;
+            }
 
             // Default empty if missing
             const merged: UserProfile = {
                 full_name: emp.full_name,
                 employee_id: emp.employee_id,
-                email: tp?.email || "",
+                email: emp.email || "", // Base email
+
+                // New Emails
+                official_email: tp?.official_email || tp?.email || "",
+                personal_email: tp?.personal_email || "",
+
                 phone: tp?.phone || "",
                 username: tp?.username || emp.employee_id,
                 designation: tp?.designation || "",
@@ -71,11 +82,30 @@ export default function ProfilePage() {
                 gender: tp?.gender || "",
                 dob: tp?.dob || "",
                 doj: tp?.doj || "",
+                dor: tp?.dor || "", // Date of Retirement
+
+                // Identity
+                blood_group: tp?.blood_group || "",
+                aadhar_number: tp?.aadhar_number || "",
+                pan_number: tp?.pan_number || "",
+                apaar_id: tp?.apaar_id || "",
+
+                // Addresses
+                address: tp?.address || "",
+                communication_address: tp?.communication_address || tp?.address || "",
+                permanent_address: tp?.permanent_address || "",
+
+                // Experience
                 experience_years: tp?.experience_years || "",
+                teaching_experience_years: tp?.teaching_experience_years || "",
+                post_mtech_experience: tp?.post_mtech_experience || "",
+                post_teaching_experience: tp?.post_teaching_experience || "",
+
                 office_room: tp?.office_room || "",
                 availability: tp?.availability || "",
                 skills: tp?.skills || "",
-                address: tp?.address || "",
+                qualification: tp?.qualification || "",
+
                 education: tp?.education || [],
                 experience_teaching: tp?.experience_teaching || [],
                 experience_admin: tp?.experience_admin || [],
@@ -200,6 +230,19 @@ export default function ProfilePage() {
                         <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">Last updated: Today</p>
                     </div>
                     <div className="flex gap-4">
+                        <Button
+                            onClick={() => {
+                                document.cookie = "employee_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+                                localStorage.removeItem("user_id");
+                                localStorage.removeItem("user_name");
+                                supabase.auth.signOut();
+                                router.push("/login");
+                            }}
+                            variant="ghost"
+                            className="text-red-500 hover:bg-red-50 hover:text-red-600 rounded-xl font-bold hidden md:flex"
+                        >
+                            <LogOut className="w-4 h-4 mr-2" /> Sign Out
+                        </Button>
                         <Button onClick={() => window.open(`/profile/preview`, '_blank')} variant="ghost" className="text-slate-600 hover:bg-white/50 rounded-xl font-bold hidden md:flex">
                             <Share2 className="w-4 h-4 mr-2" /> Public View
                         </Button>
@@ -233,35 +276,95 @@ export default function ProfilePage() {
                                 {isEditing ? <Textarea value={formData.bio} onChange={e => setFormData({ ...formData, bio: e.target.value })} className="bg-white/80 min-h-[120px] rounded-xl border-white/60" /> : <p className="text-slate-600 leading-relaxed text-lg">{formData.bio || "No biography added."}</p>}
                             </div>
 
-                            {/* Teaching Philosophy */}
-                            <div className="bg-white/40 border border-white/50 rounded-[2rem] p-8 backdrop-blur-2xl shadow-sm">
-                                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><Heart className="w-5 h-5 text-pink-500" /> Teaching Philosophy & Mission</h3>
-                                {isEditing ? <Textarea value={formData.teaching_philosophy} onChange={e => setFormData({ ...formData, teaching_philosophy: e.target.value })} className="bg-white/80 min-h-[100px] rounded-xl border-white/60" placeholder="e.g. Passionate about making learning practical..." /> : <p className="text-slate-600 italic">"{formData.teaching_philosophy || "Not specified."}"</p>}
-                            </div>
-
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Details Card */}
                                 <div className="bg-white/40 border border-white/50 rounded-[2rem] p-8 backdrop-blur-2xl shadow-sm">
-                                    <h3 className="text-sm font-bold text-slate-400 uppercase mb-6">Personal Details</h3>
+                                    <h3 className="text-sm font-bold text-slate-400 uppercase mb-6">Personal & Service Details</h3>
                                     <div className="space-y-4">
                                         <InfoRow label="Employee ID" value={formData.employee_id} icon={Briefcase} />
-                                        <InfoRow label="Gender" value={formData.gender} icon={User} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, gender: v })} />
+                                        <InfoRow label="Program" value={formData.program} icon={Layers} />
+                                        <InfoRow
+                                            label="Designation"
+                                            value={formData.designation}
+                                            icon={Award}
+                                            isEditing={isEditing}
+                                            onChange={(v: string) => setFormData({ ...formData, designation: v })}
+                                            type="select"
+                                            options={["Professor", "Associate Professor", "Assistant Professor"]}
+                                        />
+                                        <InfoRow
+                                            label="Qualification"
+                                            value={formData.qualification}
+                                            icon={GraduationCap}
+                                            isEditing={isEditing}
+                                            onChange={(v: string) => setFormData({ ...formData, qualification: v })}
+                                            type="select"
+                                            options={["PhD", "M.Tech", "Other"]}
+                                        />
+                                        <InfoRow label="Department" value={formData.program} icon={Layers} />
+                                        <InfoRow
+                                            label="Gender"
+                                            value={formData.gender}
+                                            icon={User}
+                                            isEditing={isEditing}
+                                            onChange={(v: string) => setFormData({ ...formData, gender: v })}
+                                            type="select"
+                                            options={["Male", "Female", "Other"]}
+                                        />
+                                        <InfoRow
+                                            label="Blood Group"
+                                            value={formData.blood_group}
+                                            icon={Heart}
+                                            isEditing={isEditing}
+                                            onChange={(v: string) => setFormData({ ...formData, blood_group: v })}
+                                            type="select"
+                                            options={["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]}
+                                        />
                                         <InfoRow label="Date of Birth" value={formData.dob} icon={Calendar} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, dob: v })} />
                                         <InfoRow label="Join Date" value={formData.doj} icon={Calendar} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, doj: v })} />
-                                        <InfoRow label="Office" value={formData.office_room} icon={MapPin} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, office_room: v })} />
-                                        <InfoRow label="Office Hours" value={formData.availability} icon={Clock} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, availability: v })} />
+                                        <InfoRow label="Retirement Date" value={formData.dor} icon={Calendar} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, dor: v })} />
                                     </div>
                                 </div>
-                                {/* Contact Card (Privacy Logic Simulated) */}
+
+                                {/* Identity Card (New) */}
                                 <div className="bg-white/40 border border-white/50 rounded-[2rem] p-8 backdrop-blur-2xl shadow-sm">
-                                    <h3 className="text-sm font-bold text-slate-400 uppercase mb-6">Contact Information</h3>
+                                    <h3 className="text-sm font-bold text-slate-400 uppercase mb-6">Identity Information</h3>
                                     <div className="space-y-4">
-                                        <InfoRow label="Email (Official)" value={formData.email} icon={Mail} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, email: v })} />
-                                        <div className="relative">
-                                            <InfoRow label="Phone (Private)" value={formData.phone} icon={Phone} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, phone: v })} />
-                                            {!isEditing && <div className="absolute top-0 right-0 bg-yellow-100 text-yellow-700 text-[10px] px-2 py-0.5 rounded-full font-bold border border-yellow-200">Admins Only</div>}
+                                        <InfoRow label="Aadhar Number" value={formData.aadhar_number} icon={FileText} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, aadhar_number: v })} />
+                                        <InfoRow label="PAN Number" value={formData.pan_number} icon={FileText} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, pan_number: v })} />
+                                        <InfoRow label="APAAR ID" value={formData.apaar_id} icon={FileText} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, apaar_id: v })} />
+
+                                        <div className="h-px bg-white/50 my-4" />
+                                        <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Experience</h4>
+                                        <InfoRow label="Total Experience" value={formData.experience_years} icon={Clock} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, experience_years: v })} />
+                                        <InfoRow label="Teaching Exp (Yrs)" value={formData.teaching_experience_years} icon={Briefcase} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, teaching_experience_years: v })} />
+                                        <InfoRow label="Post M.Tech Exp" value={formData.post_mtech_experience} icon={GraduationCap} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, post_mtech_experience: v })} />
+                                    </div>
+                                </div>
+
+                                {/* Contact Card */}
+                                <div className="bg-white/40 border border-white/50 rounded-[2rem] p-8 backdrop-blur-2xl shadow-sm md:col-span-2">
+                                    <h3 className="text-sm font-bold text-slate-400 uppercase mb-6">Contact & Address</h3>
+                                    <div className="grid md:grid-cols-2 gap-8">
+                                        <div className="space-y-4">
+                                            <InfoRow label="Official Email" value={formData.official_email} icon={Mail} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, official_email: v })} />
+                                            <InfoRow label="Personal Email" value={formData.personal_email} icon={Mail} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, personal_email: v })} />
+                                            <InfoRow label="Mobile" value={formData.phone} icon={Phone} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, phone: v })} />
                                         </div>
-                                        <InfoRow label="Address" value={profile.address} icon={MapPin} isEditing={isEditing} onChange={(v: string) => setFormData({ ...formData, address: v })} />
+                                        <div className="space-y-4">
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-bold text-slate-400 uppercase">Communication Address</label>
+                                                {isEditing ? (
+                                                    <Textarea value={formData.communication_address} onChange={e => setFormData({ ...formData, communication_address: e.target.value })} className="bg-white/80" />
+                                                ) : <p className="text-sm font-medium text-slate-700">{formData.communication_address || "N/A"}</p>}
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-bold text-slate-400 uppercase">Permanent Address</label>
+                                                {isEditing ? (
+                                                    <Textarea value={formData.permanent_address} onChange={e => setFormData({ ...formData, permanent_address: e.target.value })} className="bg-white/80" />
+                                                ) : <p className="text-sm font-medium text-slate-700">{formData.permanent_address || "N/A"}</p>}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -340,20 +443,30 @@ export default function ProfilePage() {
                                 onUpdate={items => setFormData({ ...formData, publications: items })}
                                 isEditing={isEditing}
                                 fields={[
-                                    { name: 'title', label: 'Title', required: true },
-                                    { name: 'journal', label: 'Journal/Conference', required: true },
-                                    { name: 'year', label: 'Year', required: true },
-                                    { name: 'link', label: 'DOI / Link', placeholder: "https://..." },
+                                    { name: 'title', label: 'Title of Paper', required: true },
+                                    { name: 'journal_name', label: 'Journal/Conference Name', required: true },
+                                    { name: 'indexing', label: 'Indexing', type: 'select', options: ['Scopus', 'SCI', 'Others'], required: true },
+                                    { name: 'quartile', label: 'Quartile', type: 'select', options: ['Q1', 'Q2', 'Q3', 'Q4'], required: true },
+                                    { name: 'volume', label: 'Volume' },
+                                    { name: 'issue_number', label: 'Issue Number' },
+                                    { name: 'year_of_publication', label: 'Year', required: true },
+                                    { name: 'doi_link', label: 'DOI / Article Link', placeholder: "https://..." },
+                                    { name: 'paper_file', label: 'Paper File (URL)', type: 'file', placeholder: "Upload/Paste Link to PDF" },
                                 ]}
                                 renderItem={(item: Publication) => (
                                     <div>
                                         <h4 className="font-bold text-slate-800 leading-tight">"{item.title}"</h4>
                                         <div className="flex flex-wrap gap-2 mt-2 text-sm">
-                                            <span className="font-bold text-indigo-600">{item.journal}</span>
+                                            <span className="font-bold text-indigo-600">{item.journal_name}</span>
+                                            <span className="text-xs font-bold bg-slate-200 px-2 py-0.5 rounded">{item.indexing}</span>
+                                            {item.quartile && <span className="text-xs font-bold bg-blue-100 text-blue-600 px-2 py-0.5 rounded">{item.quartile}</span>}
                                             <span className="text-slate-400">•</span>
-                                            <span>{item.year}</span>
+                                            <span>{item.year_of_publication}</span>
                                         </div>
-                                        {item.link && <a href={item.link} target="_blank" className="text-xs text-blue-500 hover:underline mt-2 inline-flex items-center gap-1"><ExternalLink /> View Publication</a>}
+                                        <div className="flex gap-4 mt-2">
+                                            {item.doi_link && <a href={item.doi_link} target="_blank" className="text-xs text-blue-500 hover:underline inline-flex items-center gap-1"><ExternalLink /> View Article</a>}
+                                            {item.paper_file && <a href={item.paper_file} target="_blank" className="text-xs text-emerald-600 hover:underline inline-flex items-center gap-1"><ExternalLink /> View PDF</a>}
+                                        </div>
                                     </div>
                                 )}
                             />
@@ -413,6 +526,33 @@ export default function ProfilePage() {
                     {activeTab === 'community' && (
                         <div className="space-y-6">
                             <ListEditor
+                                title="Professional Memberships"
+                                items={formData.memberships || []}
+                                onUpdate={items => setFormData({ ...formData, memberships: items })}
+                                isEditing={isEditing}
+                                fields={[
+                                    {
+                                        name: 'organization',
+                                        label: 'Organization',
+                                        type: 'select',
+                                        options: ['ISTE', 'ICE', 'CSI', 'ACM', 'IEEE', 'ASME', 'ASCE', 'IETE', 'SAE India', 'Other'],
+                                        required: true
+                                    },
+                                    { name: 'id', label: 'Membership ID' },
+                                    { name: 'year', label: 'Since Year' },
+                                ]}
+                                renderItem={(item: Membership) => (
+                                    <div className="flex justify-between items-center">
+                                        <h4 className="font-bold text-slate-800">{item.organization}</h4>
+                                        <div className="text-right">
+                                            <p className="text-sm font-bold text-blue-600">{item.id}</p>
+                                            <p className="text-xs text-slate-500">Since {item.year}</p>
+                                        </div>
+                                    </div>
+                                )}
+                            />
+
+                            <ListEditor
                                 title="Awards & Achievements"
                                 items={formData.awards || []}
                                 onUpdate={items => setFormData({ ...formData, awards: items })}
@@ -432,6 +572,7 @@ export default function ProfilePage() {
                                     </div>
                                 )}
                             />
+
                             <ListEditor
                                 title="Events & Workshops"
                                 items={formData.events || []}
@@ -449,23 +590,6 @@ export default function ProfilePage() {
                                             <span className="text-xs font-bold bg-slate-200 text-slate-600 px-2 py-0.5 rounded">{item.type}</span>
                                             <span className="text-xs text-slate-500">{item.date}</span>
                                         </div>
-                                    </div>
-                                )}
-                            />
-                            <ListEditor
-                                title="Memberships"
-                                items={formData.memberships || []}
-                                onUpdate={items => setFormData({ ...formData, memberships: items })}
-                                isEditing={isEditing}
-                                fields={[
-                                    { name: 'organization', label: 'Organization (e.g. IEEE)', required: true },
-                                    { name: 'role', label: 'Role / ID' },
-                                    { name: 'year', label: 'Since Year' },
-                                ]}
-                                renderItem={(item: Membership) => (
-                                    <div className="flex justify-between items-center">
-                                        <h4 className="font-bold text-slate-800">{item.organization}</h4>
-                                        <p className="text-sm text-slate-600">Since {item.year}</p>
                                     </div>
                                 )}
                             />
@@ -522,7 +646,7 @@ export default function ProfilePage() {
     );
 }
 
-function InfoRow({ label, value, icon: Icon, isEditing, onChange, isLink = false }: any) {
+function InfoRow({ label, value, icon: Icon, isEditing, onChange, isLink = false, type = 'text', options = [] }: any) {
     return (
         <div className="flex items-center gap-4 p-4 rounded-xl bg-white/40 border border-white/40">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-white shadow-sm text-slate-600`}>
@@ -531,7 +655,22 @@ function InfoRow({ label, value, icon: Icon, isEditing, onChange, isLink = false
             <div className="flex-1">
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">{label}</p>
                 {isEditing ? (
-                    <Input value={value || ""} onChange={e => onChange(e.target.value)} className="bg-white/90 h-10 border-blue-100" />
+                    type === 'select' ? (
+                        <div className="relative">
+                            <select
+                                value={value || ""}
+                                onChange={e => onChange(e.target.value)}
+                                className="w-full h-10 px-3 rounded-md bg-white/90 border border-blue-100 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 appearance-none font-medium cursor-pointer"
+                            >
+                                <option value="" disabled>Select {label}</option>
+                                {options.map((opt: string) => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                            </select>
+                        </div>
+                    ) : (
+                        <Input value={value || ""} onChange={e => onChange(e.target.value)} className="bg-white/90 h-10 border-blue-100" />
+                    )
                 ) : (
                     isLink && value ? (
                         <a href={value} target="_blank" className="font-bold text-blue-600 hover:underline truncate block">{value}</a>

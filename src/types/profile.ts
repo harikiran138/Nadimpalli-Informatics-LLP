@@ -20,10 +20,14 @@ export interface ExperienceAdmin {
 
 export interface Publication {
     title: string;
-    journal: string; // Journal/Conference Name
-    year: string;
-    link?: string; // DOI/URL
-    type?: 'Journal' | 'Conference' | 'Book' | 'Patent';
+    journal_name: string; // Renamed from journal to match request often, keeping compatible
+    indexing: 'Scopus' | 'SCI' | 'Others';
+    quartile: 'Q1' | 'Q2' | 'Q3' | 'Q4';
+    volume?: string;
+    issue_number?: string;
+    year_of_publication: string;
+    paper_file?: string; // URL to file
+    doi_link?: string;
 }
 
 export interface AwardItem {
@@ -42,9 +46,10 @@ export interface Project {
 }
 
 export interface Membership {
-    organization: string; // IEEE, ACM
+    organization: string; // IST, ICE, CSI etc
     id?: string;
-    year: string; // Active Since
+    year?: string; // Active Since
+    type?: string;
 }
 
 export interface EventItem {
@@ -79,22 +84,48 @@ export interface SocialLinks {
 export interface UserProfile {
     // Identity
     full_name: string;
-    employee_id: string;
+    employee_id: string; // Read-only
     username: string;
-    email: string; // College Mail preferred
-    phone: string; // Official/Private
+    email: string; // Legacy/Display email
+
+    // Detailed Name
+    first_name?: string;
+    middle_name?: string;
+    last_name?: string;
+
+    // New E-mails
+    official_email?: string;
+    personal_email?: string;
+
+    phone: string; // Contact Number
     profile_photo?: string;
 
     // Personal (New)
     gender?: string;
     dob?: string;
+    dor?: string; // Date of Retirement
+    blood_group?: string;
+    aadhar_number?: string;
+    pan_number?: string;
+    apaar_id?: string;
+
+    // Addresses
+    address?: string; // Keeping for backward compat
+    communication_address?: string;
+    permanent_address?: string;
 
     // Professional
     designation: string;
-    program: string; // Department
-    subjects?: string[]; // Array of subject names
+    program: string; // Department - Read Only after onboarding
+    subjects?: string[];
     doj?: string; // Date of Joining
-    experience_years: string;
+
+    // Experience
+    experience_years: string; // Total Teaching Experience
+    teaching_experience_years?: string; // Explicit field if needed
+    post_mtech_experience?: string;
+    post_teaching_experience?: string;
+
     office_room?: string;
     availability?: string; // Office Hours
 
@@ -106,7 +137,7 @@ export interface UserProfile {
     education?: Education[];
     experience_teaching?: ExperienceTeaching[];
     experience_admin?: ExperienceAdmin[];
-    publications?: Publication[];
+    publications?: Publication[]; // Array of Publication objects
     projects?: Project[];
     awards?: AwardItem[];
     events?: EventItem[];
@@ -117,7 +148,6 @@ export interface UserProfile {
     student_interaction?: StudentInteraction;
     social_links?: SocialLinks;
 
-    skills?: string; // CSV or can be expanded
-    address?: string;
-    qualification?: string; // Highest qualification shortcut
+    skills?: string;
+    qualification?: string; // Highest qualification
 }
