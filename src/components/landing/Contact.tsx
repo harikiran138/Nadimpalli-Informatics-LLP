@@ -47,7 +47,7 @@ export function Contact() {
                                     </div>
                                     <div>
                                         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Direct Channel</p>
-                                        <p className="text-slate-800 font-medium">contact@nadimpalli.info</p>
+                                        <p className="text-slate-800 font-medium">NadimpalliInformatics@gmail.com</p>
                                     </div>
                                 </div>
 
