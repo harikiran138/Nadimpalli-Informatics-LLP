@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { UserProfile } from "@/types/profile";
+import { getContactSubmissions, updateSubmissionStatus, sendNotification } from "@/app/actions";
+import { Send, CheckSquare, Square } from "lucide-react";
 
 
 const supabase = createClient();
@@ -22,12 +24,28 @@ interface Employee {
     profile?: UserProfile; // Joined profile data
 }
 
+interface ContactSubmission {
+    id: string;
+    full_name: string;
+    email: string;
+    message: string;
+    status: string;
+    created_at: string;
+}
+
 export default function AdminDashboard() {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [adminIds, setAdminIds] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
-    const [activeTab, setActiveTab] = useState<"dashboard" | "employees">("dashboard");
+    const [activeTab, setActiveTab] = useState<"dashboard" | "employees" | "messages" | "communication">("dashboard");
+    const [messages, setMessages] = useState<ContactSubmission[]>([]);
+    const [currentDate, setCurrentDate] = useState("");
+
+    // Communication State
+    const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
+    const [commsForm, setCommsForm] = useState({ title: "", message: "" });
+    const [sendingComms, setSendingComms] = useState(false);
 
     // Editing State
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -77,7 +95,13 @@ export default function AdminDashboard() {
             })) || [];
 
             setEmployees(mergedEmployees);
+
             setAdminIds(new Set(adms?.map(a => a.employee_id) || []));
+
+            // 5. Fetch Messages
+            const msgs = await getContactSubmissions();
+            setMessages(msgs as ContactSubmission[]);
+
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
@@ -120,6 +144,16 @@ export default function AdminDashboard() {
             supabase.removeChannel(admChannel);
         };
     }, [fetchData]);
+
+    useEffect(() => {
+        const date = new Date().toLocaleDateString("en-US", {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        setCurrentDate(date);
+    }, []);
 
     // Handlers
     const handleCreate = async (e: React.FormEvent) => {
@@ -225,6 +259,50 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleMessageStatus = async (id: string, newStatus: string) => {
+        // Optimistic update
+        setMessages(prev => prev.map(m => m.id === id ? { ...m, status: newStatus } : m));
+        await updateSubmissionStatus(id, newStatus);
+    };
+
+    const handleSendNotification = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSendingComms(true);
+        try {
+            // Assume current admin is first admin found or hardcode a generic sender if auth not fully integrated in component
+            // For now use the first admin ID from the set for "sender", or just a placeholder string since we don't have auth context here easily.
+            // Better: get user inside the action if possible, but action uses adminClient.
+            // We'll pass a placeholder "admin" for now or the first available admin ID.
+            const sender = Array.from(adminIds)[0] || "admin";
+
+            const result = await sendNotification(Array.from(selectedRecipients), commsForm.title, commsForm.message, sender);
+            if (result.error) throw new Error(result.error);
+
+            alert("Message sent successfully!");
+            setCommsForm({ title: "", message: "" });
+            setSelectedRecipients(new Set());
+        } catch (err: any) {
+            alert(err.message);
+        } finally {
+            setSendingComms(false);
+        }
+    };
+
+    const toggleRecipient = (id: string) => {
+        const newSet = new Set(selectedRecipients);
+        if (newSet.has(id)) newSet.delete(id);
+        else newSet.add(id);
+        setSelectedRecipients(newSet);
+    };
+
+    const toggleAllRecipients = () => {
+        if (selectedRecipients.size === employees.length) {
+            setSelectedRecipients(new Set());
+        } else {
+            setSelectedRecipients(new Set(employees.map(e => e.employee_id)));
+        }
+    };
+
     const filteredEmployees = employees.filter(e =>
         e.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         e.employee_id.toLowerCase().includes(searchQuery.toLowerCase())
@@ -302,6 +380,27 @@ export default function AdminDashboard() {
                         <Users className={`w-5 h-5 mr-3 ${activeTab === "employees" ? "text-white" : "text-slate-400"}`} />
                         Employees
                     </Button>
+                    <Button
+                        variant="ghost"
+                        onClick={() => setActiveTab("messages")}
+                        className={`w-full justify-start h-14 rounded-2xl font-bold transition-all ${activeTab === "messages" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30" : "text-slate-600 hover:bg-white/40"}`}
+                    >
+                        <Mail className={`w-5 h-5 mr-3 ${activeTab === "messages" ? "text-white" : "text-slate-400"}`} />
+                        Messages
+                        {messages.filter(m => m.status === 'new').length > 0 && (
+                            <span className="ml-auto bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">
+                                {messages.filter(m => m.status === 'new').length}
+                            </span>
+                        )}
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        onClick={() => setActiveTab("communication")}
+                        className={`w-full justify-start h-14 rounded-2xl font-bold transition-all ${activeTab === "communication" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30" : "text-slate-600 hover:bg-white/40"}`}
+                    >
+                        <Send className={`w-5 h-5 mr-3 ${activeTab === "communication" ? "text-white" : "text-slate-400"}`} />
+                        Communication
+                    </Button>
                 </nav>
 
                 <div className="p-6">
@@ -319,30 +418,40 @@ export default function AdminDashboard() {
                 <header className="h-20 px-8 mb-4 rounded-[2.5rem] bg-white/40 backdrop-blur-2xl border border-white/50 shadow-sm flex items-center justify-between shrink-0">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-800">
-                            {activeTab === "dashboard" ? "Dashboard Overview" : "Employee Database"}
+                            {activeTab === "dashboard" ? "Dashboard Overview" : activeTab === "employees" ? "Employee Database" : "Message Center"}
                         </h1>
                         <p className="text-slate-500 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                             System Online
+                            {currentDate && (
+                                <>
+                                    <span className="mx-2 text-slate-300">|</span>
+                                    {currentDate}
+                                </>
+                            )}
                         </p>
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="relative group/search hidden md:block">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <Input
-                                placeholder="Search..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 h-10 w-64 rounded-xl bg-white/50 border-white/60 focus:bg-white/90 shadow-sm transition-all"
-                            />
-                        </div>
-                        <Button
-                            onClick={() => setShowCreate(true)}
-                            className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-600/20 font-bold px-6"
-                        >
-                            <Plus className="w-4 h-4 mr-2" /> Add New
-                        </Button>
+                        {activeTab !== "messages" && activeTab !== "communication" && (
+                            <>
+                                <div className="relative group/search hidden md:block">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <Input
+                                        placeholder="Search..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="pl-10 h-10 w-64 rounded-xl bg-white/50 border-white/60 focus:bg-white/90 shadow-sm transition-all"
+                                    />
+                                </div>
+                                <Button
+                                    onClick={() => setShowCreate(true)}
+                                    className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-600/20 font-bold px-6"
+                                >
+                                    <Plus className="w-4 h-4 mr-2" /> Add New
+                                </Button>
+                            </>
+                        )}
                     </div>
                 </header>
 
@@ -422,7 +531,7 @@ export default function AdminDashboard() {
                         )}
                     </AnimatePresence>
 
-                    {activeTab === "dashboard" ? (
+                    {activeTab === "dashboard" && (
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <StatCard
@@ -448,7 +557,9 @@ export default function AdminDashboard() {
                                 />
                             </div>
                         </div>
-                    ) : (
+                    )}
+
+                    {activeTab === "employees" && (
                         <div className="space-y-4">
                             {filteredEmployees.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center p-12 bg-white/40 rounded-[2rem] border border-white/50">
@@ -525,14 +636,14 @@ export default function AdminDashboard() {
                                                             {(emp.profile?.email) ? (
                                                                 <div className="flex items-center gap-1.5 text-xs text-slate-600 truncate group/link">
                                                                     <Mail className="w-3 h-3 text-slate-400" />
-                                                                    <span className="truncate max-w-[140px] opacity-80 group-hover:opacity-100 transition-opacity">{emp.profile.email}</span>
+                                                                    <span className="truncate max-w-[140px] opacity-100">{emp.profile.email}</span>
                                                                 </div>
                                                             ) : <span className="text-[10px] text-slate-400 italic">No Email</span>}
                                                         </div>
                                                     </div>
 
                                                     {/* Actions */}
-                                                    <div className="col-span-1 flex justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                    <div className="col-span-1 flex justify-end gap-1 opacity-60 hover:opacity-100 transition-opacity">
                                                         <Button
                                                             size="icon"
                                                             variant="ghost"
@@ -558,6 +669,139 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {activeTab === "messages" && (
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-1 gap-4 pb-20">
+                                {messages.map((msg) => (
+                                    <motion.div
+                                        key={msg.id}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className={`p-6 rounded-[2rem] border transition-all ${msg.status === 'new' ? 'bg-white/60 border-blue-200 shadow-md' : 'bg-white/30 border-white/40'}`}
+                                    >
+                                        <div className="flex justify-between items-start gap-4">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <h3 className="font-bold text-slate-800">{msg.full_name}</h3>
+                                                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${msg.status === 'new' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>
+                                                        {msg.status}
+                                                    </span>
+                                                    <span className="text-xs text-slate-400 flex items-center gap-1">
+                                                        <Clock className="w-3 h-3" />
+                                                        {new Date(msg.created_at).toLocaleString()}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm font-medium text-slate-600 mb-3 bg-white/40 p-3 rounded-xl border border-white/50">
+                                                    {msg.message}
+                                                </p>
+                                                <div className="flex items-center gap-2 text-xs text-slate-500 font-bold">
+                                                    <Mail className="w-3 h-3" />
+                                                    {msg.email}
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                {msg.status === 'new' && (
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => handleMessageStatus(msg.id, 'read')}
+                                                        className="bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl text-xs font-bold shadow-sm"
+                                                    >
+                                                        Mark Read
+                                                    </Button>
+                                                )}
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() => window.location.href = `mailto:${msg.email}`}
+                                                    className="bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl text-xs font-bold"
+                                                >
+                                                    Reply
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                                {messages.length === 0 && (
+                                    <div className="text-center py-12 text-slate-500 font-medium">No messages found.</div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === "communication" && (
+                        <div className="space-y-6 pb-20">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                                {/* Recipient List */}
+                                <div className="lg:col-span-1 bg-white/40 backdrop-blur-2xl border border-white/50 shadow-sm rounded-[2rem] overflow-hidden flex flex-col h-[70vh]">
+                                    <div className="p-6 border-b border-white/30 bg-white/20 flex justify-between items-center">
+                                        <h3 className="font-bold text-slate-800">Recipients</h3>
+                                        <Button size="sm" variant="ghost" onClick={toggleAllRecipients} className="text-xs font-bold text-blue-600 hover:bg-white/50">
+                                            {selectedRecipients.size === employees.length ? "Deselect All" : "Select All"}
+                                        </Button>
+                                    </div>
+                                    <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2">
+                                        {employees.map(emp => (
+                                            <div
+                                                key={emp.id}
+                                                onClick={() => toggleRecipient(emp.employee_id)}
+                                                className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${selectedRecipients.has(emp.employee_id) ? 'bg-blue-100/50 border-blue-200' : 'hover:bg-white/40 border-transparent'} border`}
+                                            >
+                                                <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${selectedRecipients.has(emp.employee_id) ? 'bg-blue-600 border-blue-600' : 'border-slate-300 bg-white'}`}>
+                                                    {selectedRecipients.has(emp.employee_id) && <CheckSquare className="w-3 h-3 text-white" />}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-bold text-slate-700 truncate">{emp.full_name}</p>
+                                                    <p className="text-[10px] text-slate-500 font-mono truncate">{emp.employee_id}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="p-4 border-t border-white/30 bg-blue-50/50 text-xs font-bold text-center text-slate-600">
+                                        {selectedRecipients.size} selected
+                                    </div>
+                                </div>
+
+                                {/* Compose Area */}
+                                <div className="lg:col-span-2 bg-white/40 backdrop-blur-2xl border border-white/50 shadow-sm rounded-[2rem] p-8 flex flex-col h-[70vh]">
+                                    <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                        <Send className="w-5 h-5 text-blue-600" /> Compose Message
+                                    </h3>
+                                    <form onSubmit={handleSendNotification} className="flex-1 flex flex-col gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-slate-500 uppercase">Subject</label>
+                                            <Input
+                                                value={commsForm.title}
+                                                onChange={e => setCommsForm({ ...commsForm, title: e.target.value })}
+                                                placeholder="Important Announcement..."
+                                                className="bg-white/60 border-white/60 focus:bg-white rounded-xl"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="space-y-2 flex-1 flex flex-col">
+                                            <label className="text-xs font-bold text-slate-500 uppercase">Message</label>
+                                            <textarea
+                                                value={commsForm.message}
+                                                onChange={e => setCommsForm({ ...commsForm, message: e.target.value })}
+                                                placeholder="Type your message here..."
+                                                className="flex-1 bg-white/60 border-white/60 focus:bg-white rounded-xl p-4 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-slate-900/5 focus:border-transparent transition-all"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="flex justify-end pt-4">
+                                            <Button
+                                                type="submit"
+                                                disabled={sendingComms || selectedRecipients.size === 0}
+                                                className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold shadow-lg shadow-blue-600/20 px-8 py-6 disabled:opacity-50"
+                                            >
+                                                {sendingComms ? "Sending..." : "Send Notification"}
+                                            </Button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </motion.div>

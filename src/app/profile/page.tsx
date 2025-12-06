@@ -11,8 +11,9 @@ import { UserProfile, Education, ExperienceTeaching, Publication, Project, Award
 import {
     Loader2, LogOut, User, Mail, Phone, MapPin, Clock, Briefcase, GraduationCap,
     BookOpen, Award, FileText, Users, Globe, Linkedin, Twitter, Save, Edit2, Lightbulb,
-    Calendar, Share2, QrCode as QrIcon, Camera, LayoutGrid, Layers, Monitor, Heart
+    Calendar, Share2, QrCode as QrIcon, Camera, LayoutGrid, Layers, Monitor, Heart, Bell, Check
 } from "lucide-react";
+import { getMyNotifications, markNotificationRead } from "@/app/actions";
 import { motion, AnimatePresence } from "framer-motion";
 import QRCode from "react-qr-code";
 import Loader from "@/components/ui/Loader";
@@ -39,6 +40,11 @@ export default function ProfilePage() {
 
     // Form State
     const [formData, setFormData] = useState<UserProfile | null>(null);
+
+    // Notifications State
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     useEffect(() => {
         fetchProfile();
@@ -125,6 +131,31 @@ export default function ProfilePage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const fetchNotifications = async () => {
+        try {
+            const employeeId = localStorage.getItem("user_id");
+            if (employeeId) {
+                const data = await getMyNotifications(employeeId);
+                setNotifications(data || []);
+                setUnreadCount(data?.filter((n: any) => !n.is_read).length || 0);
+            }
+        } catch (error) {
+            console.error("Error fetching notifications", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchNotifications();
+        // Optional: Polling or Subscription could go here
+    }, []);
+
+    const handleMarkRead = async (id: string) => {
+        // Optimistic
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+        await markNotificationRead(id);
     };
 
     const handleSave = async () => {
@@ -230,6 +261,57 @@ export default function ProfilePage() {
                         <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">Last updated: Today</p>
                     </div>
                     <div className="flex gap-4">
+                        <div className="relative">
+                            <Button
+                                variant="ghost"
+                                className="relative rounded-xl hover:bg-white/50"
+                                onClick={() => setShowNotifications(!showNotifications)}
+                            >
+                                <Bell className="w-5 h-5 text-slate-600" />
+                                {unreadCount > 0 && (
+                                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                                )}
+                            </Button>
+
+                            <AnimatePresence>
+                                {showNotifications && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        className="absolute top-12 right-0 w-80 md:w-96 bg-white/60 backdrop-blur-2xl border border-white/60 shadow-2xl rounded-2xl overflow-hidden z-50 flex flex-col max-h-[60vh]"
+                                    >
+                                        <div className="p-4 border-b border-white/40 bg-white/40 flex justify-between items-center">
+                                            <h3 className="font-bold text-slate-800">Notifications</h3>
+                                            <span className="text-xs font-bold text-blue-600 bg-blue-100/50 px-2 py-0.5 rounded-full">{unreadCount} New</span>
+                                        </div>
+                                        <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-2">
+                                            {notifications.length === 0 ? (
+                                                <div className="p-8 text-center text-slate-500 text-sm font-medium">No notifications</div>
+                                            ) : (
+                                                notifications.map(notif => (
+                                                    <div
+                                                        key={notif.id}
+                                                        className={`p-3 rounded-xl border transition-all ${notif.is_read ? 'bg-white/30 border-transparent opacity-60 hover:opacity-100' : 'bg-white/80 border-blue-100 shadow-sm'}`}
+                                                    >
+                                                        <div className="flex justify-between items-start gap-2">
+                                                            <h4 className={`text-sm text-slate-800 ${notif.is_read ? 'font-medium' : 'font-bold'}`}>{notif.title}</h4>
+                                                            {!notif.is_read && (
+                                                                <button onClick={() => handleMarkRead(notif.id)} className="text-blue-500 hover:text-blue-700" title="Mark as read">
+                                                                    <Check className="w-3 h-3" />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-xs text-slate-600 mt-1 leading-relaxed">{notif.message}</p>
+                                                        <p className="text-[10px] text-slate-400 mt-2 text-right">{new Date(notif.created_at).toLocaleDateString()}</p>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
                         <Button
                             onClick={() => {
                                 document.cookie = "employee_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";

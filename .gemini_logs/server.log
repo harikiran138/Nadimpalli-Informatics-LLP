@@ -10,3 +10,42 @@
  ✓ Starting...
  ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
  ✓ Ready in 1207ms
+ HEAD / 200 in 3.0s (compile: 2.7s, proxy.ts: 88ms, render: 182ms)
+ GET / 200 in 121ms (compile: 12ms, proxy.ts: 18ms, render: 92ms)
+ GET / 200 in 75ms (compile: 7ms, proxy.ts: 7ms, render: 61ms)
+ POST / 200 in 803ms (compile: 8ms, proxy.ts: 25ms, render: 770ms)
+ GET /login 200 in 817ms (compile: 781ms, proxy.ts: 15ms, render: 21ms)
+ GET /admin 200 in 599ms (compile: 571ms, proxy.ts: 9ms, render: 19ms)
+ POST /admin 200 in 382ms (compile: 5ms, proxy.ts: 9ms, render: 368ms)
+ POST /admin 200 in 332ms (compile: 5ms, proxy.ts: 4ms, render: 324ms)
+ ✓ Compiled in 138ms
+ ✓ Compiled in 787ms
+ POST /admin 200 in 1884ms (compile: 470ms, proxy.ts: 239ms, render: 1175ms)
+ POST /admin 200 in 372ms (compile: 13ms, proxy.ts: 11ms, render: 348ms)
+ POST /admin 200 in 495ms (compile: 17ms, proxy.ts: 92ms, render: 386ms)
+ GET /admin 200 in 281ms (compile: 10ms, proxy.ts: 15ms, render: 256ms)
+ POST /admin 200 in 388ms (compile: 4ms, proxy.ts: 6ms, render: 378ms)
+ GET /admin 200 in 63ms (compile: 8ms, proxy.ts: 9ms, render: 46ms)
+ POST /admin 200 in 383ms (compile: 6ms, proxy.ts: 6ms, render: 371ms)
+ ✓ Compiled in 394ms
+ POST /admin 200 in 534ms (compile: 142ms, proxy.ts: 14ms, render: 377ms)
+ GET /admin 200 in 252ms (compile: 14ms, proxy.ts: 9ms, render: 229ms)
+ POST /admin 200 in 393ms (compile: 6ms, proxy.ts: 9ms, render: 379ms)
+ ✓ Compiled in 211ms
+ POST /admin 200 in 1052ms (compile: 484ms, proxy.ts: 5ms, render: 562ms)
+ ✓ Compiled in 700ms
+ GET /admin 200 in 701ms (compile: 404ms, proxy.ts: 33ms, render: 263ms)
+ ✓ Compiled in 0ms
+ GET /admin 200 in 166ms (compile: 11ms, proxy.ts: 7ms, render: 148ms)
+ POST /admin 200 in 597ms (compile: 78ms, proxy.ts: 44ms, render: 476ms)
+ POST /admin 200 in 346ms (compile: 39ms, proxy.ts: 10ms, render: 297ms)
+ GET /admin 200 in 419ms (compile: 5ms, proxy.ts: 14ms, render: 401ms)
+ POST /admin 200 in 339ms (compile: 7ms, proxy.ts: 8ms, render: 325ms)
+ ✓ Compiled in 217ms
+ ✓ Compiled in 843ms
+ ✓ Compiled in 505ms
+ GET /admin 200 in 265ms (compile: 192ms, proxy.ts: 19ms, render: 53ms)
+ POST /admin 200 in 398ms (compile: 6ms, proxy.ts: 7ms, render: 385ms)
+ POST /admin 200 in 290ms (compile: 4ms, proxy.ts: 4ms, render: 282ms)
+ GET /admin 200 in 282ms (compile: 10ms, proxy.ts: 17ms, render: 256ms)
+ POST /admin 200 in 449ms (compile: 6ms, proxy.ts: 7ms, render: 436ms)
