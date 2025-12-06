@@ -32,14 +32,24 @@ const services = [
     {
         id: "03",
         title: "Industry-Integrated Teaching & Apprenticeships",
-        description: "Real-world exposure through strong industry ties.",
+        description: "Bridging the gap between theory and practice.",
+        features: [
+            "Real-world exposure through strong industry ties",
+            "Career-focused experiential learning pathways",
+            "Professional mentoring and hands-on experience"
+        ],
         shadow: "hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]",
         color: "from-purple-400 to-fuchsia-500"
     },
     {
         id: "04",
         title: "Accreditation & Institutional Ranking Support",
-        description: "Strategy and compliance for top recognition.",
+        description: "Expert guidance for achieving global recognition.",
+        features: [
+            "Strategy and compliance for top recognition",
+            "Continuous improvement for global standards",
+            "Expert guidance to achieve higher ratings"
+        ],
         shadow: "hover:shadow-[0_0_20px_rgba(52,211,153,0.3)]",
         color: "from-emerald-400 to-teal-500"
     },
