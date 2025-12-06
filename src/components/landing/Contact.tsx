@@ -1,12 +1,29 @@
 "use client";
 
+import { useRef, useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Sparkles } from "lucide-react";
+import { Send, Sparkles, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { submitContactForm } from "@/app/actions";
 
 export function Contact() {
+    const [isPending, startTransition] = useTransition();
+    const [result, setResult] = useState<{ success?: string; error?: string } | null>(null);
+    const formRef = useRef<HTMLFormElement>(null);
+
+    const handleSubmit = async (formData: FormData) => {
+        setResult(null);
+        startTransition(async () => {
+            const response = await submitContactForm(formData);
+            setResult(response);
+            if (response.success) {
+                formRef.current?.reset();
+            }
+        });
+    };
+
     return (
         <section id="contact" className="py-32 relative overflow-hidden">
             <div className="container mx-auto px-4 max-w-7xl relative z-10">
@@ -72,20 +89,25 @@ export function Contact() {
                                 transition={{ delay: 0.2 }}
                                 className="relative rounded-[2rem] bg-white/40 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.05)] p-8 md:p-10"
                             >
-                                <form className="space-y-6">
+                                <form ref={formRef} action={handleSubmit} className="space-y-6">
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Identity</label>
                                             <Input
+                                                name="name"
                                                 placeholder="Full Name"
                                                 className="h-14 rounded-xl bg-white/50 border-white/40 focus:bg-white/80 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all duration-300 text-slate-900 placeholder:text-slate-400 px-5 shadow-sm font-medium"
+                                                required
                                             />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Communication</label>
                                             <Input
+                                                name="email"
+                                                type="email"
                                                 placeholder="Email Address"
                                                 className="h-14 rounded-xl bg-white/50 border-white/40 focus:bg-white/80 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all duration-300 text-slate-900 placeholder:text-slate-400 px-5 shadow-sm font-medium"
+                                                required
                                             />
                                         </div>
                                     </div>
@@ -93,15 +115,34 @@ export function Contact() {
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Transmission</label>
                                         <Textarea
+                                            name="message"
                                             placeholder="Enter your message parameters..."
                                             className="min-h-[160px] rounded-2xl bg-white/50 border-white/40 focus:bg-white/80 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 transition-all duration-300 text-slate-900 placeholder:text-slate-400 p-5 resize-none shadow-sm font-medium"
+                                            required
                                         />
                                     </div>
 
+                                    {result && (
+                                        <div className={`p-4 rounded-xl flex items-center gap-3 ${result.success ? 'bg-green-500/10 text-green-700 border border-green-500/20' : 'bg-red-500/10 text-red-700 border border-red-500/20'}`}>
+                                            {result.success ? <CheckCircle2 className="w-5 h-5 flex-shrink-0" /> : <AlertCircle className="w-5 h-5 flex-shrink-0" />}
+                                            <p className="text-sm font-medium">{result.success || result.error}</p>
+                                        </div>
+                                    )}
+
                                     <div className="flex justify-end pt-4">
-                                        <button className="group relative w-44 h-14 rounded-full flex justify-center items-center gap-3 bg-[#1C1A1C] cursor-pointer transition-all duration-450 hover:bg-gradient-to-t hover:from-[#8B5CF6] hover:to-[#EC4899] hover:shadow-[inset_0px_1px_0px_0px_rgba(255,255,255,0.4),inset_0px_-4px_0px_0px_rgba(0,0,0,0.2),0px_0px_0px_4px_rgba(255,255,255,0.2),0px_0px_180px_0px_#EC4899] hover:-translate-y-0.5">
-                                            <span className="text-[#AAAAAA] font-semibold text-sm transition-colors duration-450 group-hover:text-white">Send Message</span>
-                                            <Send className="w-4 h-4 text-[#AAAAAA] transition-all duration-800 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1" />
+                                        <button
+                                            type="submit"
+                                            disabled={isPending}
+                                            className="group relative w-44 h-14 rounded-full flex justify-center items-center gap-3 bg-[#1C1A1C] cursor-pointer transition-all duration-450 hover:bg-gradient-to-t hover:from-[#8B5CF6] hover:to-[#EC4899] hover:shadow-[inset_0px_1px_0px_0px_rgba(255,255,255,0.4),inset_0px_-4px_0px_0px_rgba(0,0,0,0.2),0px_0px_0px_4px_rgba(255,255,255,0.2),0px_0px_180px_0px_#EC4899] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {isPending ? (
+                                                <Loader2 className="w-5 h-5 text-white animate-spin" />
+                                            ) : (
+                                                <>
+                                                    <span className="text-[#AAAAAA] font-semibold text-sm transition-colors duration-450 group-hover:text-white">Send Message</span>
+                                                    <Send className="w-4 h-4 text-[#AAAAAA] transition-all duration-800 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1" />
+                                                </>
+                                            )}
                                         </button>
                                     </div>
                                 </form>
